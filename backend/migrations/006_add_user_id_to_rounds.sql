@@ -1,0 +1,1 @@
+  ALTER TABLE rounds ADD COLUMN user_id TEXT NOT NULL DEFAULT '';
