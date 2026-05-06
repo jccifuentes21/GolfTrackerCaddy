@@ -2,3 +2,7 @@
 CLAUDE.md
 .vscode/
 test
+
+# skills CLI artifacts (root-level, not part of the project)
+node_modules
+package-lock.json

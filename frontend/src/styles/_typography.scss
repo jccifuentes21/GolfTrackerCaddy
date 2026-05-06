@@ -1,0 +1,51 @@
+// Inter is loaded via Google Fonts in index.html
+
+html {
+  font-family: var(--font-sans);
+  font-size: 16px;
+}
+
+body {
+  font-size: var(--text-base);
+  font-weight: var(--weight-normal);
+  color: var(--clr-text-primary);
+}
+
+h1 {
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.015em;
+}
+
+h3 {
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.01em;
+}
+
+h4 {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-normal);
+}
+
+h5,
+h6 {
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  line-height: var(--leading-normal);
+}
+
+p {
+  line-height: var(--leading-relaxed);
+  color: var(--clr-text-secondary);
+}
