@@ -1,0 +1,203 @@
+@use '../mixins' as *;
+
+// ── Viewport ─────────────────────────────────────────────
+.viewport {
+  position: fixed;
+  top: max(var(--sp-6), env(safe-area-inset-top));
+  left: var(--sp-4);
+  right: var(--sp-4);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  outline: none;
+  pointer-events: none;
+
+  @include md {
+    left: auto;
+    right: var(--sp-6);
+    width: 360px;
+  }
+}
+
+// ── Toast root ───────────────────────────────────────────
+.root {
+  // Per-type accent, overridden by .success / .error / .info below
+  --toast-accent: var(--clr-border);
+
+  position: relative;
+  overflow: hidden;
+  background-color: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-4);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  // Warm-tinted shadow stack from tokens
+  box-shadow: var(--shadow-md), var(--shadow-sm);
+  pointer-events: all;
+
+  // Lifetime progress bar — drains over the 4s duration
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: 100%;
+    background-color: var(--toast-accent);
+    transform-origin: left;
+    animation: progress 4000ms linear forwards;
+  }
+
+  &[data-state='open'] {
+    animation: toastIn 400ms var(--ease-out-expo) both;
+  }
+
+  &[data-state='closed'] {
+    animation: toastOut 220ms var(--ease-out-expo) forwards;
+
+    &::after { display: none; }
+  }
+
+  &[data-swipe='move'] {
+    transform: translateX(var(--radix-toast-swipe-move-x));
+    transition: none;
+  }
+
+  &[data-swipe='cancel'] {
+    transform: translateX(0);
+    transition: transform 300ms var(--ease-out-expo);
+  }
+
+  &[data-swipe='end'] {
+    animation: swipeOut 200ms var(--ease-out-expo) forwards;
+  }
+}
+
+// ── Type variants — snapped to system palette ────────────
+.success {
+  background-color: var(--clr-accent-subtle);
+  border-color: oklch(88% 0.04 143);
+  --toast-accent: var(--clr-success);
+}
+
+.error {
+  // Parchment-leaning red, same lightness as accent-subtle for cohesion
+  background-color: oklch(95% 0.03 25);
+  border-color: oklch(88% 0.04 25);
+  --toast-accent: var(--clr-danger);
+}
+
+.info {
+  background-color: var(--clr-surface);
+  border-color: var(--clr-border);
+  --toast-accent: var(--clr-text-tertiary);
+}
+
+// ── Content ──────────────────────────────────────────────
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-primary);
+  line-height: var(--leading-tight);
+
+  // Type-specific title color comes from the same accent the bar uses
+  .success & { color: var(--clr-success); }
+  .error & { color: var(--clr-danger); }
+}
+
+.description {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  color: var(--clr-text-secondary);
+  margin-top: var(--sp-1);
+  line-height: var(--leading-normal);
+}
+
+// ── Close button — tactile press, system-tinted ──────────
+.close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--clr-text-tertiary);
+  padding: 2px;
+  flex-shrink: 0;
+  @include flex-center;
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--t-fast),
+    background-color var(--t-fast),
+    transform 140ms var(--ease-out-expo);
+
+  &:active { transform: scale(0.92); }
+
+  &:focus-visible { @include focus-ring; }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: var(--clr-text-primary);
+      background-color: var(--clr-surface-raised);
+    }
+  }
+}
+
+// ── Motion ───────────────────────────────────────────────
+@keyframes toastIn {
+  from {
+    transform: translateY(-12px) scale(0.96);
+    opacity: 0;
+    filter: blur(3px);
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes toastOut {
+  from {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    filter: blur(0);
+  }
+  to {
+    transform: translateY(-6px) scale(0.97);
+    opacity: 0;
+    filter: blur(2px);
+  }
+}
+
+@keyframes swipeOut {
+  from {
+    transform: translateX(var(--radix-toast-swipe-end-x));
+    opacity: 1;
+  }
+  to {
+    transform: translateX(calc(100% + var(--sp-6)));
+    opacity: 0;
+  }
+}
+
+@keyframes progress {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root[data-state='open'],
+  .root[data-state='closed'] {
+    animation: none;
+  }
+  .root::after {
+    animation: none;
+  }
+}

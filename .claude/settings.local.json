@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(impeccable)",
+      "Bash(node *)",
+      "Bash(go get *)",
+      "Bash(go build *)"
+    ]
+  }
+}

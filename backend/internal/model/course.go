@@ -3,12 +3,12 @@ package model
 import "time"
 
 type Course struct {
-	ID         string
-	ClubName   string
-	CourseName string
-	Address    string
-	City       string
-	State      string
-	Country    string
-	CreatedAt  time.Time
+	ID         string    `json:"id"`
+	ClubName   string    `json:"club_name"`
+	CourseName string    `json:"course_name"`
+	Address    string    `json:"address"`
+	City       string    `json:"city"`
+	State      string    `json:"state"`
+	Country    string    `json:"country"`
+	CreatedAt  time.Time `json:"created_at"`
 }

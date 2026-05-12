@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/api"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/db"
@@ -11,6 +12,7 @@ import (
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/service"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/store"
 	"github.com/joho/godotenv"
+	"github.com/rs/cors"
 )
 
 func main() {
@@ -73,8 +75,25 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	log.Printf("Starting server on port %s", port)
-	if err := http.ListenAndServe(":"+port, mux); err != nil {
+
+	// Comma-separated origins, e.g. "http://localhost:5173,https://theloop.vercel.app"
+	// Defaults to Vite's local dev origin so getting started Just Works.
+	originsEnv := os.Getenv("CORS_ALLOWED_ORIGINS")
+	if originsEnv == "" {
+		originsEnv = "http://localhost:5173"
+	}
+	allowedOrigins := strings.Split(originsEnv, ",")
+
+	corsHandler := cors.New(cors.Options{
+		AllowedOrigins:   allowedOrigins,
+		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           86400, // cache preflight for 24h
+	})
+
+	log.Printf("Starting server on port %s (CORS allowed: %v)", port, allowedOrigins)
+	if err := http.ListenAndServe(":"+port, corsHandler.Handler(mux)); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }

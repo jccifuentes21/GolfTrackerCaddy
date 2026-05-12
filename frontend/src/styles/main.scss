@@ -1,11 +1,13 @@
-@use 'tokens';
-@use 'reset';
-@use 'typography';
+@use "tokens";
+@use "reset";
+@use "typography";
 
 body {
   background-color: var(--clr-bg);
   color: var(--clr-text-primary);
-  transition: background-color var(--t-base), color var(--t-base);
+  transition:
+    background-color var(--t-base),
+    color var(--t-base);
 }
 
 #root {

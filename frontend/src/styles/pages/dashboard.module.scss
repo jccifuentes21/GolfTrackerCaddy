@@ -1,0 +1,383 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+// expo ease-out — snappy start, graceful settle
+$ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+// ── Page ─────────────────────────────────────────────────
+.page {
+  @include flex-col;
+  min-height: 100dvh;
+  background: var(--clr-bg);
+  // Room for fixed CTA bar on mobile
+  padding-bottom: 92px;
+
+  @include md {
+    padding-bottom: var(--sp-16);
+  }
+}
+
+// ── Header ───────────────────────────────────────────────
+.header {
+  @include flex-between;
+  padding: var(--sp-4) var(--sp-6);
+  background: var(--clr-green-ground);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  // Visible only when parchment content scrolls beneath it
+  box-shadow: 0 1px 0 oklch(0% 0 0 / 0.12);
+
+  opacity: 0;
+  animation: fadeIn 360ms $ease-expo both;
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-bold);
+  color: var(--clr-parchment);
+  letter-spacing: -0.02em;
+}
+
+// ── Hero ─────────────────────────────────────────────────
+.hero {
+  @include flex-col;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-8) var(--sp-6) var(--sp-10);
+  background: var(--clr-green-ground);
+
+  @include md {
+    // Padding grows to keep hero text aligned with the centered rounds block
+    padding-top: var(--sp-12);
+    padding-bottom: var(--sp-16);
+    padding-left: max(var(--sp-6), calc((100% - 640px) / 2 + var(--sp-6)));
+    padding-right: max(var(--sp-6), calc((100% - 640px) / 2 + var(--sp-6)));
+    gap: var(--sp-4);
+  }
+}
+
+.heroLabel {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  // Parchment at 55% opacity — present but subordinate
+  color: oklch(97.5% 0.018 75 / 0.55);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0;
+
+  opacity: 0;
+  animation: fadeUp 420ms $ease-expo 60ms both;
+}
+
+.heroHeading {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  color: var(--clr-parchment);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.03em;
+  margin: 0;
+
+  opacity: 0;
+  animation: fadeUp 460ms $ease-expo 120ms both;
+
+  @include md {
+    font-size: var(--text-4xl);
+  }
+}
+
+// Desktop-only CTA inside the hero — hidden on mobile
+.ctaDesktop {
+  display: none;
+
+  @include md {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-4) var(--sp-8);
+    // Inverted: cream button on dark green — reads as crafted
+    background: var(--clr-parchment);
+    color: var(--clr-green-ground);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    min-height: 52px;
+    transition:
+      background 160ms $ease-expo,
+      transform 160ms $ease-expo;
+
+    opacity: 0;
+    animation: fadeUp 500ms $ease-expo 180ms both;
+
+    &:active {
+      transform: scale(0.97);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--clr-parchment);
+      outline-offset: 3px;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: oklch(95% 0.022 75);
+      }
+    }
+  }
+}
+
+// ── Recent Rounds ─────────────────────────────────────────
+.rounds {
+  @include flex-col;
+  gap: var(--sp-4);
+  padding: var(--sp-8) var(--sp-6) 0;
+
+  @include md {
+    max-width: 640px;
+    width: 100%;
+    margin: 0 auto;
+    padding: var(--sp-8) var(--sp-6) 0;
+  }
+}
+
+.roundsHeading {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+
+  opacity: 0;
+  animation: fadeIn 380ms $ease-expo 240ms both;
+}
+
+// Ruled lines — caddy notebook aesthetic, not card grid
+.roundsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--clr-border-subtle);
+}
+
+.roundRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) 0;
+  border-bottom: 1px solid var(--clr-border-subtle);
+  cursor: pointer;
+
+  // Chevron: signals tappability, animates on hover
+  &::after {
+    content: '›';
+    font-size: 1.2rem;
+    color: var(--clr-text-tertiary);
+    flex-shrink: 0;
+    line-height: 1;
+    transition: transform 200ms $ease-expo, color 200ms $ease-expo;
+  }
+
+  // Stagger entrance — Emil: 30–80ms between items
+  opacity: 0;
+  animation: fadeUp 400ms $ease-expo both;
+  animation-delay: calc(280ms + var(--index) * 65ms);
+
+  // Tactile tap feedback on mobile
+  &:active {
+    opacity: 0.6;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    // Expand hit area on desktop to flush with container edge
+    margin: 0 calc(var(--sp-3) * -1);
+    padding-left: var(--sp-3);
+    padding-right: var(--sp-3);
+    border-radius: var(--radius-sm);
+    transition: background 180ms $ease-expo;
+
+    &:hover {
+      background: var(--clr-surface-raised);
+
+      .roundCourse {
+        color: var(--clr-accent);
+      }
+
+      &::after {
+        transform: translateX(4px);
+        color: var(--clr-accent);
+      }
+    }
+  }
+}
+
+.roundInfo {
+  @include flex-col;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.roundCourse {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--clr-text-primary);
+  transition: color 180ms $ease-expo;
+  @include truncate;
+}
+
+.roundDate {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--clr-text-secondary);
+}
+
+// Score + par differential, stacked right-aligned
+.roundMeta {
+  @include flex-col;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.roundScore {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--clr-text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+// Golf convention: +10, -2, E
+.roundPar {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-tertiary);
+  letter-spacing: 0.04em;
+}
+
+// ── Empty state ───────────────────────────────────────────
+.emptyState {
+  @include flex-col;
+  gap: var(--sp-2);
+  padding: var(--sp-10) 0;
+  border-top: 1px solid var(--clr-border-subtle);
+
+  opacity: 0;
+  animation: fadeUp 420ms $ease-expo 320ms both;
+}
+
+.emptyTitle {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--clr-text-secondary);
+  margin: 0;
+}
+
+.emptyBody {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--clr-text-tertiary);
+  line-height: var(--leading-relaxed);
+  max-width: 38ch;
+  margin: 0;
+}
+
+// ── Fixed bottom CTA — mobile thumb zone ─────────────────
+.ctaBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: var(--sp-3) var(--sp-6);
+  // Handles iPhone notch and Android gesture bar
+  padding-bottom: max(var(--sp-3), env(safe-area-inset-bottom));
+  background: var(--clr-bg);
+  border-top: 1px solid var(--clr-border);
+
+  opacity: 0;
+  animation: fadeIn 400ms $ease-expo 340ms both;
+
+  @include md {
+    display: none;
+  }
+}
+
+.ctaButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--sp-4) var(--sp-8);
+  background: var(--clr-accent);
+  color: var(--clr-accent-on);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  min-height: 54px;
+  transition:
+    background 160ms $ease-expo,
+    transform 160ms $ease-expo;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--clr-accent);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: var(--clr-accent-hover);
+    }
+  }
+}
+
+// ── Reduced motion ────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .header,
+  .heroLabel,
+  .heroHeading,
+  .ctaDesktop,
+  .roundsHeading,
+  .roundRow,
+  .emptyState,
+  .ctaBar {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

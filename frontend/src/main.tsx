@@ -1,22 +1,41 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { ClerkProvider } from '@clerk/clerk-react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter } from 'react-router-dom'
-import './styles/main.scss'
-import App from './App.tsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { ClerkProvider } from "@clerk/clerk-react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter } from "react-router-dom";
+import "./styles/main.scss";
+import App from "./App.tsx";
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!PUBLISHABLE_KEY) {
-  throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY in frontend/.env')
+  throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY in frontend/.env");
 }
 
-const queryClient = new QueryClient()
+// Scene: golfer between holes on a sunny course, phone in one hand, glove on the other.
+// That scene forces light mode. Dark mode has no place in this app's primary use case.
+document.documentElement.setAttribute("data-theme", "light");
 
-createRoot(document.getElementById('root')!).render(
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // One quick retry on transient failure, not the default 3-with-backoff.
+      // Search overrides this to `retry: false` for fail-fast behavior.
+      retry: 1,
+      retryDelay: 500,
+    },
+  },
+});
+
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider
+      publishableKey={PUBLISHABLE_KEY}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/dashboard"
+    >
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
           <App />
@@ -24,4 +43,4 @@ createRoot(document.getElementById('root')!).render(
       </QueryClientProvider>
     </ClerkProvider>
   </StrictMode>,
-)
+);

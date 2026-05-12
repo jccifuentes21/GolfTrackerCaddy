@@ -1,0 +1,405 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+// ── Motion primitives ─────────────────────────────────────
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+// Skeleton sweep — hardware-accelerated translate of a gradient mask
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+// ── Page ──────────────────────────────────────────────────
+.page {
+  @include flex-col;
+  min-height: 100dvh;
+  background: var(--clr-bg);
+}
+
+// ── Header band — Masters green ground ────────────────────
+// Full-bleed; padding centers content to 640px on desktop without
+// breaking the green carrying the full viewport width.
+.header {
+  @include flex-col;
+  align-items: flex-start;
+  gap: var(--sp-5);
+  background: var(--clr-green-ground);
+  padding: var(--sp-3) var(--sp-6) var(--sp-8);
+
+  @include md {
+    padding-top: var(--sp-5);
+    padding-bottom: var(--sp-10);
+    padding-left: max(var(--sp-6), calc((100% - 640px) / 2 + var(--sp-6)));
+    padding-right: max(var(--sp-6), calc((100% - 640px) / 2 + var(--sp-6)));
+  }
+}
+
+// Back chevron — parchment on green, 48px hit area
+.back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-left: calc(var(--sp-3) * -1);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--clr-parchment);
+  cursor: pointer;
+  transition:
+    background 160ms var(--ease-out-expo),
+    transform 140ms var(--ease-out-expo);
+
+  svg { display: block; }
+
+  &:active { transform: scale(0.94); }
+
+  &:focus-visible {
+    outline: 2px solid var(--clr-parchment);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    // Subtle parchment wash on hover, never opaque white
+    &:hover { background: oklch(97.5% 0.018 75 / 0.12); }
+  }
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-normal);
+  color: var(--clr-parchment);
+  letter-spacing: -0.02em;
+  line-height: var(--leading-tight);
+  margin: 0;
+
+  opacity: 0;
+  animation: fadeUp 420ms var(--ease-out-expo) 40ms both;
+
+  @include md {
+    font-size: var(--text-4xl);
+  }
+}
+
+// ── Search field — sits on green, parchment fill ─────────
+.field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 56px;
+  background: var(--clr-bg);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  transition: border-color 160ms var(--ease-out-expo);
+
+  // Parchment ring on focus — green-on-green wouldn't read
+  &:focus-within {
+    border-color: oklch(97.5% 0.018 75 / 0.6);
+  }
+
+  opacity: 0;
+  animation: fadeUp 460ms var(--ease-out-expo) 100ms both;
+}
+
+.fieldIcon {
+  flex-shrink: 0;
+  @include flex-center;
+  width: 48px;
+  height: 100%;
+  color: var(--clr-text-tertiary);
+  pointer-events: none;
+
+  svg { display: block; }
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 var(--sp-2) 0 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-normal);
+  color: var(--clr-text-primary);
+
+  &::placeholder { color: var(--clr-text-tertiary); }
+}
+
+.clear {
+  flex-shrink: 0;
+  @include flex-center;
+  width: 48px;
+  height: 100%;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--clr-text-tertiary);
+  cursor: pointer;
+  transition:
+    color 160ms var(--ease-out-expo),
+    transform 140ms var(--ease-out-expo);
+
+  svg { display: block; }
+
+  &:active { transform: scale(0.92); }
+
+  &:focus-visible { @include focus-ring; }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { color: var(--clr-text-secondary); }
+  }
+}
+
+// ── Results region — parchment ground ─────────────────────
+.results {
+  padding: var(--sp-6) var(--sp-6) var(--sp-16);
+
+  @include md {
+    max-width: 640px;
+    width: 100%;
+    margin: 0 auto;
+    padding-left: var(--sp-6);
+    padding-right: var(--sp-6);
+  }
+}
+
+// Idle — serif italic prompt, sits where rows would
+.idle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-style: italic;
+  font-weight: var(--weight-normal);
+  color: var(--clr-text-secondary);
+  margin: var(--sp-2) 0 0;
+
+  opacity: 0;
+  animation: fadeIn 380ms var(--ease-out-expo) 200ms both;
+}
+
+// No matches
+.empty {
+  @include flex-col;
+  gap: var(--sp-2);
+  padding-top: var(--sp-2);
+
+  opacity: 0;
+  animation: fadeUp 320ms var(--ease-out-expo) both;
+}
+
+.emptyTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-normal);
+  color: var(--clr-text-primary);
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.emptyBody {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--clr-text-secondary);
+  margin: 0;
+  max-width: 38ch;
+}
+
+// ── Result list — ruled rows, no cards ───────────────────
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--clr-border-subtle);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-3) var(--sp-2);
+  margin: 0 calc(var(--sp-2) * -1); // negative gutter so hover bg bleeds to gutter
+  border: none;
+  border-bottom: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+
+  // Stagger first 6 rows only — long lists shouldn't make user wait
+  opacity: 0;
+  animation: fadeUp 280ms var(--ease-out-expo) both;
+  animation-delay: calc(min(var(--index, 0), 6) * 40ms);
+
+  transition:
+    background 180ms var(--ease-out-expo),
+    transform 140ms var(--ease-out-expo);
+
+  // Trailing chevron — slides right on hover, signals tappable
+  &::after {
+    content: '›';
+    flex-shrink: 0;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--clr-text-tertiary);
+    transition:
+      transform 200ms var(--ease-out-expo),
+      color 200ms var(--ease-out-expo);
+  }
+
+  &:active {
+    transform: scale(0.99);
+    background: var(--clr-accent-subtle);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--clr-accent);
+    outline-offset: -2px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: var(--clr-surface-raised);
+
+      .rowCourse { color: var(--clr-accent); }
+
+      &::after {
+        transform: translateX(4px);
+        color: var(--clr-accent);
+      }
+    }
+  }
+}
+
+// Course initial — parchment-serif letter on Masters green ground.
+// Carries the green palette into the parchment zone, anchors each row visually.
+.monogram {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--clr-green-ground);
+  color: var(--clr-parchment);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-medium);
+  letter-spacing: -0.02em;
+  border-radius: var(--radius-full);
+  // Subtle warm lift — depth without card chrome
+  box-shadow: var(--shadow-sm);
+  user-select: none;
+}
+
+.rowInfo {
+  @include flex-col;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.rowCourse {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-primary);
+  transition: color 180ms var(--ease-out-expo);
+  @include truncate;
+}
+
+.rowLocation {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--clr-text-secondary);
+  @include truncate;
+}
+
+// ── Skeleton (searching) ─────────────────────────────────
+.skeletonList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--clr-border-subtle);
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-2);
+  margin: 0 calc(var(--sp-2) * -1);
+  border-bottom: 1px solid var(--clr-border-subtle);
+}
+
+// Placeholder for the monogram — same circle, neutral fill
+.skeletonAvatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--clr-surface-raised);
+}
+
+.skeletonBars {
+  @include flex-col;
+  gap: var(--sp-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.skeletonBar {
+  position: relative;
+  height: 14px;
+  border-radius: var(--radius-sm);
+  background: var(--clr-surface-raised);
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--clr-bg) 50%,
+      transparent 100%
+    );
+    animation: shimmer 1400ms linear infinite;
+    will-change: transform;
+  }
+}
+
+.skeletonBarTop    { width: 60%; }
+.skeletonBarBottom { width: 35%; }
+
+// ── Reduced motion ───────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .title,
+  .field,
+  .idle,
+  .empty,
+  .row {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .skeletonBar::after { animation: none; }
+}
