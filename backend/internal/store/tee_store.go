@@ -7,6 +7,8 @@ import (
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/model"
 )
 
+// TeeStore owns all SQL for tee records.
+// A tee belongs to a course, but it gets its own table because yardage, par, rating, and slope vary by tee.
 type TeeStore struct {
 	db *pgxpool.Pool
 }
@@ -17,6 +19,8 @@ func NewTeeStore(db *pgxpool.Pool) *TeeStore {
 
 func (s *TeeStore) Create(ctx context.Context, t *model.Tee) (string, error) {
 	var id string
+	// The unique constraint is (course_id, tee_name), so this upsert deduplicates tees within a course.
+	// RETURNING id gives the service the database id whether the row was inserted or already existed.
 	err := s.db.QueryRow(ctx, `
 			INSERT INTO tees (id, course_id, tee_name, course_rating, slope_rating, total_yards, par)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -28,7 +32,7 @@ func (s *TeeStore) Create(ctx context.Context, t *model.Tee) (string, error) {
 
 func (s *TeeStore) ListByCourse(ctx context.Context, courseID string) ([]model.Tee, error) {
 
-	//pgx uses Query and rows becomes an active connection to the database. It has to be closed after use.
+	// Query returns a cursor-like Rows value. Closing it returns the connection to the pool.
 	rows, err := s.db.Query(ctx, `
 		SELECT id, course_id, tee_name, course_rating, slope_rating, total_yards, par, created_at 
 		FROM tees 
@@ -37,11 +41,11 @@ func (s *TeeStore) ListByCourse(ctx context.Context, courseID string) ([]model.T
 	if err != nil {
 		return nil, err
 	}
-	//defer === finally in a try/catch block
+	// defer schedules cleanup at function exit, even when an earlier return happens.
 	defer rows.Close()
 
-	var tees []model.Tee
-	//rows.Next() is used to iterate over the rows.
+	tees := make([]model.Tee, 0)
+	// Each call to Next advances to one row, then Scan maps that row into the struct.
 	for rows.Next() {
 		var t model.Tee
 		err := rows.Scan(&t.ID, &t.CourseID, &t.TeeName, &t.CourseRating, &t.SlopeRating, &t.TotalYards, &t.Par, &t.CreatedAt)

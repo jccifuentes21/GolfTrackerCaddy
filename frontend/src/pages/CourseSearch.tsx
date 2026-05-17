@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import client from "../api/client";
 import { useToast } from "../hooks/useToast";
+import { useRoundStore } from "../stores/roundStore";
 import type { APICourse, SearchResponse } from "../types/api.gen";
+import type { Course, Tee } from "../types/model.gen";
 import styles from "../styles/pages/course-search.module.scss";
 
 const MIN_QUERY_LENGTH = 3;
@@ -40,10 +42,6 @@ export default function CourseSearch() {
   // that bumps only when a fresh error lands), so we don't re-toast on every
   // render where isError happens to still be true.
   useEffect(() => {
-    console.log({
-      isError,
-      errorUpdatedAt,
-    });
     if (isError) {
       toast.error(
         "Couldn't search right now.",
@@ -53,18 +51,28 @@ export default function CourseSearch() {
     //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [errorUpdatedAt]);
 
-  function handleSelectCourse(course: APICourse) {
-    // TODO — the "important stuff" lives here:
-    //   1. POST /courses with `course` to persist it (use useMutation)
-    //   2. Push selection into roundStore (extend the store with a `selectedCourse`
-    //      and `tees` field, or split into a separate courseStore)
-    //   3. navigate('/rounds/new')
-    //
-    // Heads-up: backend POST /courses errors on duplicate course IDs today.
-    // Either fix that with ON CONFLICT DO NOTHING server-side, or handle the
-    // duplicate response gracefully here.
-    console.log("Selected course:", course);
-  }
+  const setSelectedCourse = useRoundStore((s) => s.setSelectedCourse);
+
+  const saveMutation = useMutation({
+    mutationFn: async (course: APICourse) => {
+      const res = await client.post<{ course: Course; tees: Tee[] }>(
+        "/courses",
+        course,
+      );
+      return res.data;
+    },
+    onSuccess: ({ course, tees }) => {
+      setSelectedCourse(course, tees);
+      navigate("/rounds/new");
+    },
+    onError: () => {
+      toast.error("Couldn't save that course.", "Try again in a moment.");
+    },
+  });
+
+  const handleSelectCourse = (course: APICourse) => {
+    saveMutation.mutate(course);
+  };
 
   const showIdle = !enabled;
   const showSearching = enabled && isFetching;
@@ -190,6 +198,7 @@ export default function CourseSearch() {
                     className={styles.row}
                     style={{ "--index": i } as React.CSSProperties}
                     onClick={() => handleSelectCourse(course)}
+                    disabled={saveMutation.isPending}
                   >
                     <span className={styles.monogram} aria-hidden="true">
                       {initial}

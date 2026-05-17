@@ -9,6 +9,8 @@ import (
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/store"
 )
 
+// HoleService owns the workflow for saving and reading played hole stats.
+// This is where score validation can live later, for example putts >= 0 or holeNumber 1-18.
 type HoleService struct {
 	holes *store.HoleStore
 }
@@ -18,6 +20,8 @@ func NewHoleService(holes *store.HoleStore) *HoleService {
 }
 
 func (s *HoleService) SaveHole(ctx context.Context, roundID string, holeNumber int, score int, fairwayHit bool, GIR bool, putts int, missDirection string) (*model.Hole, error) {
+	// A new ID is generated on every save attempt, but the store's upsert means the existing row wins
+	// when this round and hole number already exist.
 	h := &model.Hole{
 		ID:            uuid.New().String(),
 		RoundID:       roundID,

@@ -16,53 +16,62 @@ import (
 )
 
 func main() {
+	// Loading environment variables at startup keeps config outside the binary.
+	// In interviews, this is the "12-factor app" idea: deploy the same code with different config.
 	if err := godotenv.Load("../.env"); err != nil {
 		log.Fatalf("Could not load .env file: %v", err)
 	}
 
-	//Dabase operations
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
 		log.Fatal("DATABASE_URL is not set")
 	}
+
+	// pgxpool manages a reusable pool of database connections.
+	// The app shares this pool across stores instead of opening a new connection per request.
 	pool, err := db.Connect(databaseURL)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 	defer pool.Close()
 
+	// Migrations run before the HTTP server starts so request handlers never see a half-ready schema.
 	if err = db.RunMigrations(pool, "migrations"); err != nil {
 		log.Fatalf("Could not run migrations: %v", err)
 	}
 	log.Println("Database connected and migrations complete")
 
-	//Check golf course API
 	apiKey := os.Getenv("GOLF_COURSE_API_KEY")
 	if apiKey == "" {
 		log.Fatal("GOLF_COURSE_API_KEY is not set")
 	}
 
-	//Wiring up all the stores
+	// Stores own persistence. They get the database pool and are the only layer that writes SQL.
 	courseStore := store.NewCourseStore(pool)
 	teeStore := store.NewTeeStore(pool)
 	courseHoleStore := store.NewCourseHoleStore(pool)
 	roundStore := store.NewRoundStore(pool)
 	holeStore := store.NewHoleStore(pool)
 
-	//Adding all services
+	// Services own business workflows. CourseService is intentionally wider because saving a course
+	// also saves tees and static hole data from the external Golf Course API.
 	courseService := service.NewCourseService(courseStore, teeStore, courseHoleStore, api.NewGolfCourseClient(apiKey))
 	roundService := service.NewRoundService(roundStore)
 	holeService := service.NewHoleService(holeStore)
 
-	//Adding all handlers
+	// Handlers own HTTP concerns: request parsing, status codes, and JSON responses.
 	courseHandler := handler.NewCourseHandler(courseService)
 	roundHandler := handler.NewRoundHandler(roundService)
 	holeHandler := handler.NewHoleHandler(holeService)
 
 	mux := http.NewServeMux()
 
+	// Go 1.22+ ServeMux supports method-aware route patterns like "GET /courses/search".
+	// This avoids a third-party router while the API surface is still small.
 	mux.HandleFunc("GET /courses/search", courseHandler.Search)
 	mux.HandleFunc("POST /courses", courseHandler.Save)
+	mux.HandleFunc("GET /courses/{id}/tees", courseHandler.ListTees)
+	mux.HandleFunc("GET /tees/{id}/holes", courseHandler.ListTeeHoles)
 
 	mux.HandleFunc("POST /rounds", roundHandler.Create)
 	mux.HandleFunc("GET /rounds", roundHandler.List)
@@ -77,13 +86,15 @@ func main() {
 	}
 
 	// Comma-separated origins, e.g. "http://localhost:5173,https://theloop.vercel.app"
-	// Defaults to Vite's local dev origin so getting started Just Works.
+	// Defaults to Vite's local dev origin so local frontend calls work without extra setup.
 	originsEnv := os.Getenv("CORS_ALLOWED_ORIGINS")
 	if originsEnv == "" {
 		originsEnv = "http://localhost:5173"
 	}
 	allowedOrigins := strings.Split(originsEnv, ",")
 
+	// CORS is enforced by browsers, not by the Go server itself.
+	// The backend must explicitly allow the frontend origin before browsers will expose responses.
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete, http.MethodOptions},

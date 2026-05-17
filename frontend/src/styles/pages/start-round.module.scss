@@ -1,0 +1,433 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+// ── Motion primitives ─────────────────────────────────────
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(100%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Page ──────────────────────────────────────────────────
+.page {
+  @include flex-col;
+  min-height: 100dvh;
+  background: var(--clr-bg);
+  // Extra bottom padding so fixed CTA bar never covers content on mobile
+  padding-bottom: 88px;
+
+  @include md {
+    padding-bottom: 0;
+  }
+}
+
+// ── Header: Masters green ground ──────────────────────────
+.header {
+  @include flex-col;
+  align-items: flex-start;
+  gap: var(--sp-1);
+  background: var(--clr-green-ground);
+  padding: var(--sp-3) var(--sp-6) var(--sp-8);
+
+  @include md {
+    padding-top: var(--sp-5);
+    padding-bottom: var(--sp-10);
+    padding-left: max(var(--sp-6), calc((100% - 640px) / 2 + var(--sp-6)));
+    padding-right: max(var(--sp-6), calc((100% - 640px) / 2 + var(--sp-6)));
+  }
+}
+
+// Back chevron — parchment on green, 48px hit area
+.back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-left: calc(var(--sp-3) * -1);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--clr-parchment);
+  cursor: pointer;
+  transition:
+    background 160ms var(--ease-out-expo),
+    transform 140ms var(--ease-out-expo);
+
+  svg { display: block; }
+
+  &:active { transform: scale(0.94); }
+
+  &:focus-visible {
+    outline: 2px solid var(--clr-parchment);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { background: oklch(97.5% 0.018 75 / 0.12); }
+  }
+}
+
+// Course name — breadcrumb above the title
+.courseName {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: oklch(97.5% 0.018 75 / 0.65);
+  letter-spacing: 0.01em;
+  margin: var(--sp-2) 0 0;
+
+  opacity: 0;
+  animation: fadeUp 360ms var(--ease-out-expo) 20ms both;
+}
+
+// Page title — Playfair Display, large, parchment
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-normal);
+  color: var(--clr-parchment);
+  letter-spacing: -0.02em;
+  line-height: var(--leading-tight);
+  margin: 0;
+
+  opacity: 0;
+  animation: fadeUp 420ms var(--ease-out-expo) 60ms both;
+
+  @include md {
+    font-size: var(--text-4xl);
+  }
+}
+
+// ── Body ──────────────────────────────────────────────────
+.body {
+  @include flex-col;
+  gap: var(--sp-8);
+  padding: var(--sp-6) var(--sp-6) var(--sp-10);
+
+  @include md {
+    max-width: 640px;
+    width: 100%;
+    margin: 0 auto;
+    padding-left: var(--sp-6);
+    padding-right: var(--sp-6);
+  }
+}
+
+// ── Section ────────────────────────────────────────────────
+.section {
+  @include flex-col;
+  gap: var(--sp-3);
+}
+
+// Section label — uppercase, quiet, wayfinder not heading
+.sectionLabel {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-tertiary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+// ── Tee list ──────────────────────────────────────────────
+.teeList,
+.modeList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--clr-border-subtle);
+}
+
+// Shared row base — used by both tee rows and mode rows
+%row-base {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-4) var(--sp-2);
+  margin: 0 calc(var(--sp-2) * -1);
+  border: none;
+  border-bottom: 1px solid var(--clr-border-subtle);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+
+  // Stagger first 6 rows — same pattern as CourseSearch result rows
+  opacity: 0;
+  animation: fadeUp 280ms var(--ease-out-expo) both;
+  animation-delay: calc(min(var(--index, 0), 6) * 40ms);
+
+  transition:
+    background 180ms var(--ease-out-expo),
+    transform 140ms var(--ease-out-expo);
+
+  &:active {
+    transform: scale(0.99);
+  }
+
+  &:focus-visible { @include focus-ring; }
+
+  // Selected state — accent subtle background, no side stripe (banned)
+  &[aria-pressed="true"] {
+    background: var(--clr-accent-subtle);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background: var(--clr-surface-raised);
+    }
+
+    &[aria-pressed="true"]:hover {
+      background: var(--clr-accent-subtle);
+    }
+  }
+}
+
+.teeRow {
+  @extend %row-base;
+}
+
+// Single tee display — read-only, no button chrome
+.teeRowSingle {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-2);
+  border-top: 1px solid var(--clr-border-subtle);
+  border-bottom: 1px solid var(--clr-border-subtle);
+
+  .teeName {
+    color: var(--clr-text-primary);
+  }
+}
+
+// Colored dot — 12px circle, derives color from tee name in TSX
+.teeDot {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  // background set inline via style prop in TSX
+  box-shadow: 0 0 0 2px var(--clr-border);
+}
+
+.teeInfo {
+  @include flex-col;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.teeName {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-primary);
+
+  // When the row is selected, tee name picks up the accent color
+  [aria-pressed="true"] & {
+    color: var(--clr-accent);
+  }
+}
+
+.teeMeta {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--clr-text-secondary);
+}
+
+// ── Radio indicator ────────────────────────────────────────
+// A circle that shows empty (unselected) or filled + checkmark (selected).
+// We use border + background rather than a real <input type="radio"> so we
+// control every pixel of the visual. The aria-pressed on the parent handles
+// the semantics.
+.radio {
+  flex-shrink: 0;
+  @include flex-center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--clr-border);
+  background: transparent;
+  color: var(--clr-parchment);
+  transition:
+    background 160ms var(--ease-out-expo),
+    border-color 160ms var(--ease-out-expo);
+
+  [aria-pressed="true"] & {
+    background: var(--clr-accent);
+    border-color: var(--clr-accent);
+  }
+
+  svg { display: block; }
+}
+
+// ── Date field ────────────────────────────────────────────
+.dateField {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  transition: border-color 160ms var(--ease-out-expo);
+
+  &:focus-within {
+    border-color: var(--clr-accent);
+  }
+}
+
+.dateIcon {
+  flex-shrink: 0;
+  @include flex-center;
+  width: 48px;
+  height: 100%;
+  color: var(--clr-text-tertiary);
+  pointer-events: none;
+
+  svg { display: block; }
+}
+
+// The native date input — we style the container, not the browser's calendar popup.
+// color-scheme: light ensures the popup matches our light background.
+.dateInput {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 var(--sp-4) 0 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-normal);
+  color: var(--clr-text-primary);
+  color-scheme: light;
+  cursor: pointer;
+}
+
+// ── Mode rows ─────────────────────────────────────────────
+.modeRow {
+  @extend %row-base;
+  // Taller than tee rows — holds two lines of copy
+  padding-top: var(--sp-5);
+  padding-bottom: var(--sp-5);
+}
+
+.modeInfo {
+  @include flex-col;
+  gap: var(--sp-1);
+  flex: 1;
+  min-width: 0;
+}
+
+.modeName {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-primary);
+  transition: color 160ms var(--ease-out-expo);
+
+  [aria-pressed="true"] & {
+    color: var(--clr-accent);
+  }
+}
+
+.modeDesc {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--clr-text-secondary);
+  line-height: var(--leading-normal);
+}
+
+// ── CTA ───────────────────────────────────────────────────
+// Desktop: inline at the bottom of the body, no fixed positioning
+.ctaDesktop {
+  display: none;
+
+  @include md {
+    display: block;
+    padding-top: var(--sp-4);
+  }
+}
+
+// Mobile: fixed to the bottom of the viewport, always in the thumb zone
+.ctaBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--sp-4) var(--sp-6);
+  padding-bottom: max(var(--sp-4), env(safe-area-inset-bottom));
+  background: var(--clr-bg);
+  border-top: 1px solid var(--clr-border-subtle);
+
+  animation: slideUp 360ms var(--ease-out-expo) 200ms both;
+
+  @include md {
+    display: none;
+  }
+}
+
+// Shared CTA button — used in both desktop and mobile slots
+.ctaButton {
+  width: 100%;
+  height: 54px;
+  padding: 0 var(--sp-6);
+  background: var(--clr-green-ground);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-parchment);
+  cursor: pointer;
+  transition:
+    background 180ms var(--ease-out-expo),
+    transform 140ms var(--ease-out-expo),
+    opacity 160ms var(--ease-out-expo);
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--clr-accent);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:disabled) {
+      background: oklch(34% 0.15 143);
+    }
+  }
+
+  // Disabled state — tee not yet selected, or mutation in flight
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+// ── Reduced motion ────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .courseName,
+  .title,
+  .teeRow,
+  .modeRow,
+  .ctaBar {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

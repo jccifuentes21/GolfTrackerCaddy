@@ -2,6 +2,8 @@ package model
 
 import "time"
 
+// Tee represents one playable tee set for a course.
+// Rating, slope, yardage, and par belong here because they change by tee, not just by course.
 type Tee struct {
 	ID           string    `json:"id"`
 	CourseID     string    `json:"course_id"`

@@ -7,6 +7,8 @@ import (
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/service"
 )
 
+// HoleHandler owns HTTP endpoints for scores entered within a round.
+// It converts route and JSON input into service method arguments.
 type HoleHandler struct {
 	holes *service.HoleService
 }
@@ -16,8 +18,10 @@ func NewHoleHandler(holes *service.HoleService) *HoleHandler {
 }
 
 func (h *HoleHandler) Create(w http.ResponseWriter, r *http.Request) {
+	// The round id comes from the URL because holes are nested under their parent round.
 	roundID := r.PathValue("round_id")
 
+	// This DTO is scoped to the handler because it represents incoming JSON, not stored state.
 	var input struct {
 		HoleNumber    int    `json:"hole_number"`
 		Score         int    `json:"score"`
@@ -44,6 +48,7 @@ func (h *HoleHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *HoleHandler) List(w http.ResponseWriter, r *http.Request) {
+	// GET /rounds/{round_id}/holes returns the played holes for one round.
 	roundID := r.PathValue("round_id")
 	holes, err := h.holes.ListHoles(r.Context(), roundID)
 	if err != nil {

@@ -1,0 +1,553 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Page ──────────────────────────────────────────────────
+.page {
+  @include flex-col;
+  min-height: 100dvh;
+  background: var(--clr-bg);
+}
+
+// ── Header ────────────────────────────────────────────────
+.header {
+  background: var(--clr-green-ground);
+  padding: var(--sp-3) var(--sp-4) var(--sp-5);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  @include md {
+    padding-left: max(var(--sp-6), calc((100% - 640px) / 2 + var(--sp-6)));
+    padding-right: max(var(--sp-6), calc((100% - 640px) / 2 + var(--sp-6)));
+  }
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.back {
+  flex-shrink: 0;
+  @include flex-center;
+  width: 44px;
+  height: 44px;
+  margin-left: calc(var(--sp-2) * -1);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--clr-parchment);
+  cursor: pointer;
+  transition: background 160ms var(--ease-out-expo), transform 140ms var(--ease-out-expo);
+
+  svg { display: block; }
+  &:active { transform: scale(0.94); }
+  &:focus-visible { outline: 2px solid var(--clr-parchment); outline-offset: 2px; }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { background: oklch(97.5% 0.018 75 / 0.12); }
+  }
+}
+
+.headerInfo {
+  @include flex-col;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.headerCourse {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: oklch(97.5% 0.018 75 / 0.65);
+  @include truncate;
+}
+
+.headerSubtitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-normal);
+  color: var(--clr-parchment);
+  letter-spacing: -0.01em;
+  @include truncate;
+}
+
+// Scorecard toggle — parchment-on-green icon button
+.viewToggle {
+  flex-shrink: 0;
+  @include flex-center;
+  width: 44px;
+  height: 44px;
+  background: oklch(97.5% 0.018 75 / 0.12);
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--clr-parchment);
+  cursor: pointer;
+  transition: background 160ms var(--ease-out-expo);
+
+  svg { display: block; }
+
+  &[aria-pressed="true"] {
+    background: oklch(97.5% 0.018 75 / 0.25);
+  }
+
+  &:focus-visible { outline: 2px solid var(--clr-parchment); outline-offset: 2px; }
+}
+
+// ── Body ──────────────────────────────────────────────────
+.body {
+  flex: 1;
+  padding: var(--sp-4) var(--sp-4) var(--sp-16);
+
+  @include md {
+    max-width: 640px;
+    width: 100%;
+    margin: 0 auto;
+    padding-left: var(--sp-6);
+    padding-right: var(--sp-6);
+  }
+}
+
+.loading {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--clr-text-secondary);
+  padding: var(--sp-8) 0;
+  text-align: center;
+}
+
+// ── Live view ─────────────────────────────────────────────
+.liveView {
+  @include flex-col;
+  gap: var(--sp-6);
+  padding-top: var(--sp-4);
+}
+
+// Large hole number — Playfair, prominent. The user glances at this.
+.liveHero {
+  @include flex-col;
+  gap: var(--sp-1);
+  animation: fadeUp 320ms var(--ease-out-expo) both;
+}
+
+.liveHoleNumber {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-normal);
+  color: var(--clr-text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.liveHoleMeta {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--clr-text-secondary);
+}
+
+// Prev / Next nav at the bottom of live view
+.liveNav {
+  display: flex;
+  gap: var(--sp-3);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--clr-border-subtle);
+}
+
+.liveNavBtn {
+  flex: 1;
+  height: 52px;
+  border: 1.5px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  color: var(--clr-text-primary);
+  cursor: pointer;
+  transition: background 160ms var(--ease-out-expo), transform 120ms var(--ease-out-expo);
+
+  &:active:not(:disabled) { transform: scale(0.98); }
+  &:disabled { opacity: 0.35; cursor: not-allowed; }
+  &:focus-visible { @include focus-ring; }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:disabled) { background: var(--clr-surface-raised); }
+  }
+}
+
+// Primary nav button — green, parchment text
+.liveNavBtnPrimary {
+  background: var(--clr-green-ground);
+  border-color: var(--clr-green-ground);
+  color: var(--clr-parchment);
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:disabled) {
+      background: oklch(34% 0.15 143);
+      border-color: oklch(34% 0.15 143);
+    }
+  }
+}
+
+// ── Batch view ────────────────────────────────────────────
+.batchView {
+  @include flex-col;
+  gap: var(--sp-2);
+  padding-top: var(--sp-4);
+}
+
+.batchSave {
+  padding: var(--sp-6) 0 var(--sp-10);
+}
+
+// ── Hole form ─────────────────────────────────────────────
+.holeForm {
+  @include flex-col;
+  gap: var(--sp-4);
+  padding: var(--sp-4) 0;
+}
+
+// Compact variant used in batch view — tighter gap, ruled separator
+.holeFormCompact {
+  gap: var(--sp-3);
+  padding: var(--sp-5) 0;
+  border-top: 1px solid var(--clr-border-subtle);
+
+  &:first-child { border-top: none; }
+}
+
+.holeFormHeader {
+  @include flex-between;
+  margin-bottom: var(--sp-1);
+}
+
+.holeFormNumber {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-normal);
+  color: var(--clr-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.holeFormPar {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--clr-text-secondary);
+}
+
+// Each field row: label on the left, control on the right
+.formRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  min-height: 48px;
+}
+
+.formLabel {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--clr-text-secondary);
+  flex-shrink: 0;
+  width: 80px;
+}
+
+// ── Stepper ───────────────────────────────────────────────
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.stepperBtn {
+  @include flex-center;
+  width: 44px;
+  height: 44px;
+  background: var(--clr-surface);
+  border: 1.5px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-normal);
+  color: var(--clr-text-primary);
+  cursor: pointer;
+  transition: background 140ms var(--ease-out-expo), transform 100ms var(--ease-out-expo);
+  user-select: none;
+
+  &:active:not(:disabled) { transform: scale(0.93); background: var(--clr-surface-raised); }
+  &:disabled { opacity: 0.3; cursor: not-allowed; }
+  &:focus-visible { @include focus-ring; }
+}
+
+.stepperValue {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-normal);
+  color: var(--clr-text-primary);
+  letter-spacing: -0.02em;
+  min-width: 36px;
+  text-align: center;
+  line-height: 1;
+}
+
+// ── Toggle ────────────────────────────────────────────────
+.toggle {
+  display: flex;
+  border: 1.5px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.toggleBtn {
+  flex: 1;
+  height: 44px;
+  padding: 0 var(--sp-4);
+  background: transparent;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--clr-text-secondary);
+  cursor: pointer;
+  transition: background 160ms var(--ease-out-expo), color 160ms var(--ease-out-expo);
+
+  // Divider between the two buttons
+  & + & { border-left: 1.5px solid var(--clr-border); }
+
+  &[aria-pressed="true"] {
+    background: var(--clr-accent-subtle);
+    color: var(--clr-accent);
+    font-weight: var(--weight-semibold);
+  }
+
+  &:active { background: var(--clr-surface-raised); }
+  &:focus-visible { @include focus-ring; }
+}
+
+// ── Miss selector — compass layout ────────────────────────
+// Named grid areas form a cross: long=north, left=west,
+// neutral=center, right=east, short=south. Corners are empty.
+// The spatial layout makes direction self-explanatory.
+
+// formRow variant for miss — aligns label to top of the compass grid
+.formRowMiss {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-4);
+  padding-top: var(--sp-1);
+}
+
+.missSelector {
+  display: grid;
+  grid-template-areas:
+    ". long ."
+    "left neutral right"
+    ". short .";
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-2);
+  flex: 1;
+}
+
+// Position each button in its compass slot
+.missBtnLong    { grid-area: long; }
+.missBtnLeft    { grid-area: left; }
+.missBtnNeutral { grid-area: neutral; }
+.missBtnRight   { grid-area: right; }
+.missBtnShort   { grid-area: short; }
+
+.missBtn {
+  @include flex-col;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 48px;
+  background: var(--clr-surface);
+  border: 1.5px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    background 160ms var(--ease-out-expo),
+    border-color 160ms var(--ease-out-expo),
+    transform 100ms var(--ease-out-expo);
+
+  &[aria-pressed="true"] {
+    background: var(--clr-green-ground);
+    border-color: var(--clr-green-ground);
+
+    .missBtnIcon  { color: var(--clr-parchment); }
+    .missBtnLabel { color: oklch(97.5% 0.018 75 / 0.65); }
+  }
+
+  &:active { transform: scale(0.94); }
+  &:focus-visible { @include focus-ring; }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not([aria-pressed="true"]) {
+      background: var(--clr-surface-raised);
+    }
+  }
+}
+
+.missBtnIcon {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--clr-text-secondary);
+  line-height: 1;
+  transition: color 160ms var(--ease-out-expo);
+}
+
+.missBtnLabel {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: var(--weight-medium);
+  color: var(--clr-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: color 160ms var(--ease-out-expo);
+}
+
+// ── Scorecard ─────────────────────────────────────────────
+.scorecardWrap {
+  @include flex-col;
+  gap: var(--sp-6);
+  padding-top: var(--sp-4);
+  // Horizontally scrollable on narrow screens — real scorecard feel
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scorecardHint {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  color: var(--clr-text-tertiary);
+  margin: 0;
+  min-height: 1em;
+}
+
+// Each half (front 9 / back 9) is its own flex column of rows
+.scorecardHalf {
+  @include flex-col;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+// A row of 9 cells + label + total
+.scorecardRow {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--clr-border-subtle);
+
+  &:last-child { border-bottom: none; }
+}
+
+.scorecardLabel {
+  flex-shrink: 0;
+  width: 48px;
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--clr-surface);
+  border-right: 1px solid var(--clr-border-subtle);
+}
+
+.scorecardCell {
+  flex: 1;
+  padding: var(--sp-2) 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--clr-text-secondary);
+  text-align: center;
+  border-right: 1px solid var(--clr-border-subtle);
+  min-width: 32px;
+
+  &:last-of-type { border-right: none; }
+}
+
+// Hole number cells — slightly bolder
+.scorecardHoleNum {
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-primary);
+
+  [role="button"] & { cursor: pointer; }
+}
+
+// Score cells
+.scorecardScore {
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-primary);
+
+  [role="button"] & { cursor: pointer; }
+}
+
+// Under par — accent green
+.under  { color: var(--clr-accent); }
+
+// Double bogey or worse — muted danger
+.double { color: var(--clr-danger); }
+
+.scorecardTotal {
+  flex-shrink: 0;
+  width: 40px;
+  padding: var(--sp-2) var(--sp-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: var(--clr-text-primary);
+  text-align: center;
+  background: var(--clr-surface);
+  border-left: 1px solid var(--clr-border-subtle);
+}
+
+// Running total at the bottom of the scorecard
+.scorecardTotalRow {
+  @include flex-between;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-primary);
+}
+
+// ── Shared CTA button ─────────────────────────────────────
+.ctaButton {
+  width: 100%;
+  height: 54px;
+  background: var(--clr-green-ground);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-parchment);
+  cursor: pointer;
+  transition: background 180ms var(--ease-out-expo), transform 140ms var(--ease-out-expo);
+
+  &:active:not(:disabled) { transform: scale(0.98); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+  &:focus-visible { outline: 2px solid var(--clr-accent); outline-offset: 2px; }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:disabled) { background: oklch(34% 0.15 143); }
+  }
+}
+
+// ── Reduced motion ────────────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .liveHero { animation: none; opacity: 1; }
+}

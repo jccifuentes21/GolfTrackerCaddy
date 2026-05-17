@@ -10,6 +10,8 @@ import (
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/store"
 )
 
+// RoundService contains round-level business operations.
+// It is intentionally thin right now, but this is where validation and auth ownership checks should go.
 type RoundService struct {
 	rounds *store.RoundStore
 }
@@ -19,7 +21,8 @@ func NewRoundService(rounds *store.RoundStore) *RoundService {
 }
 
 func (s *RoundService) CreateRound(ctx context.Context, teeID, userID string, date time.Time, inputMode string) (*model.Round, error) {
-	//Go uses "&" here as a pointer to the struct in order to avoid using space to copy - rather just pass a reference
+	// The service creates the ID so the handler does not control database identity.
+	// Passing a pointer lets the store receive the same Round value without copying it.
 	r := &model.Round{
 		ID:        uuid.New().String(),
 		TeeID:     teeID,

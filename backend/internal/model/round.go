@@ -2,7 +2,8 @@ package model
 
 import "time"
 
-// Round is a golf round aggregate.
+// Round is the parent record for one played round.
+// It references Tee instead of Course because score context depends on which tee set was played.
 type Round struct {
 	ID        string    `json:"id"`
 	TeeID     string    `json:"tee_id"`
