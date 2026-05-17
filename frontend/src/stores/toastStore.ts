@@ -15,10 +15,13 @@ interface ToastStore {
   removeToast: (id: string) => void
 }
 
+// Zustand is useful for small cross-app UI state because it avoids prop drilling
+// without the ceremony of a larger state management setup.
 export const useToastStore = create<ToastStore>(set => ({
   toasts: [],
   addToast: toast =>
     set(state => ({
+      // crypto.randomUUID() gives each toast stable identity for React keys and removal.
       toasts: [...state.toasts, { ...toast, id: crypto.randomUUID() }],
     })),
   removeToast: id =>

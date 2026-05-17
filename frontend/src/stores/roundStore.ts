@@ -5,6 +5,8 @@ import type { Course, Tee } from '../types/model.gen'
 type InputMode = 'live' | 'front_back' | 'full'
 type MissDirection = 'left' | 'right' | 'short' | 'long' | 'none'
 
+// HoleData is client-side draft state for the active round entry screen.
+// Backend Hole uses snake_case fields; this store uses camelCase because it is TypeScript UI state.
 interface HoleData {
   holeNumber: number
   score: number | null
@@ -14,6 +16,8 @@ interface HoleData {
   missDirection: MissDirection | null
 }
 
+// RoundStore carries the user's current round setup across pages.
+// It is not the long-term source of truth for completed rounds; the backend owns that.
 interface RoundStore {
   roundId: string | null
   courseId: string | null
@@ -30,6 +34,8 @@ interface RoundStore {
   reset: () => void
 }
 
+// Empty holes use null to mean "the user has not answered this field yet."
+// That is different from false or 0, which are real answers.
 const emptyHole = (n: number): HoleData => ({
   holeNumber: n,
   score: null,
@@ -40,7 +46,7 @@ const emptyHole = (n: number): HoleData => ({
 })
 
 // Why create<RoundStore>()() with two call sites?
-// `persist` is middleware — it wraps the store creator function and changes the
+// `persist` is middleware - it wraps the store creator function and changes the
 // type signature in a way TypeScript can't infer with a single call. The extra ()
 // is a workaround Zustand uses so generics thread through correctly. Without it
 // you get type errors on the store's state shape. This is a known Zustand quirk.
@@ -58,8 +64,11 @@ export const useRoundStore = create<RoundStore>()(
       setSelectedCourse: (course, tees) =>
         set({ selectedCourse: course, courseId: course.id, tees }),
 
+      // setRound stores the minimum data needed for HoleEntry to build the scoring flow.
       setRound: (data) => set(data),
 
+      // initHoles is kept for simple local initialization paths.
+      // HoleEntry normally uses setHoles because it combines course holes with saved holes.
       initHoles: (count) =>
         set({ holes: Array.from({ length: count }, (_, i) => emptyHole(i + 1)) }),
 
@@ -71,13 +80,14 @@ export const useRoundStore = create<RoundStore>()(
       setHole: (holeNumber, data) =>
         set((state) => ({
           holes: state.holes.map((h) =>
+            // Immutable update: replace one hole object and keep the others referentially stable.
             h.holeNumber === holeNumber ? { ...h, ...data } : h
           ),
         })),
 
       // reset() clears both Zustand state AND the persisted localStorage entry.
       // Zustand's persist middleware intercepts set() calls and keeps localStorage
-      // in sync automatically — you don't call localStorage.removeItem() yourself.
+      // in sync automatically - you don't call localStorage.removeItem() yourself.
       reset: () =>
         set({
           roundId: null,
@@ -96,7 +106,7 @@ export const useRoundStore = create<RoundStore>()(
 
       // createJSONStorage wraps localStorage with JSON.stringify / JSON.parse.
       // The alternative is sessionStorage (clears on tab close) or a custom
-      // adapter (IndexedDB, cookies, etc.). localStorage is right here — we
+      // adapter (IndexedDB, cookies, etc.). localStorage is right here - we
       // explicitly want data to survive tab closes.
       storage: createJSONStorage(() => localStorage),
 
@@ -104,7 +114,7 @@ export const useRoundStore = create<RoundStore>()(
       // We persist the course selection and round config so the user can resume
       // if they close the tab mid-flow.
       //
-      // We deliberately exclude `holes` — hole data will be owned by the backend
+      // We deliberately exclude `holes` - hole data will be owned by the backend
       // once HoleEntry is built. Persisting it here would create a second source
       // of truth and complicate conflict resolution on resume.
       //

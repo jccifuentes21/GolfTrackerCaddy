@@ -1,17 +1,20 @@
 *,
 *::before,
 *::after {
+  // border-box makes width calculations predictable: declared width includes padding and border.
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 html {
+  // Prevent mobile browsers from auto-resizing text after orientation changes.
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 
 body {
+  // svh handles mobile browser chrome better than plain vh.
   min-height: 100svh;
   line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
@@ -34,6 +37,7 @@ select {
 }
 
 button {
+  // Buttons are visually reset so component modules own their styling.
   cursor: pointer;
   border: none;
   background: none;

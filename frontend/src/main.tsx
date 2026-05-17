@@ -6,6 +6,8 @@ import { BrowserRouter } from "react-router-dom";
 import "./styles/main.scss";
 import App from "./App.tsx";
 
+// Vite exposes browser-safe environment variables through import.meta.env.
+// The VITE_ prefix matters because anything exposed here ships to the client bundle.
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 if (!PUBLISHABLE_KEY) {
@@ -27,6 +29,8 @@ const queryClient = new QueryClient({
   },
 });
 
+// Provider order matters:
+// Clerk owns auth context, React Query owns server cache, BrowserRouter owns route state.
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ClerkProvider

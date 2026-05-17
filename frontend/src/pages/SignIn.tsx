@@ -10,9 +10,12 @@ interface UserForm {
   password: string;
 }
 
+// SignInPage handles both primary sign-in and the optional second-factor step.
+// Clerk owns the actual auth protocol; this component owns form state and UX feedback.
 export default function SignInPage() {
   const { signIn, isLoaded, setActive } = useSignIn();
 
+  // useAuth answers "does a session already exist?" so signed-in users skip this screen.
   const { isSignedIn, isLoaded: isaAuthLoaded } = useAuth();
 
   const navigate = useNavigate();
@@ -29,6 +32,8 @@ export default function SignInPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      // Clerk returns a status instead of assuming every sign-in is complete.
+      // That lets the UI branch into MFA or other future auth steps.
       const result = await signIn!.create({
         identifier: userForm.email,
         password: userForm.password,
@@ -54,6 +59,7 @@ export default function SignInPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      // The code was prepared with prepareSecondFactor; this call attempts to finish it.
       const result = await signIn!.attemptSecondFactor({
         strategy: "email_code",
         code,
@@ -74,6 +80,7 @@ export default function SignInPage() {
 
   const handleGoogleSignIn = async () => {
     try {
+      // OAuth leaves the app and returns through /sso-callback, which App.tsx routes to Clerk.
       await signIn!.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
@@ -85,6 +92,7 @@ export default function SignInPage() {
     }
   };
 
+  // Wait for both auth hooks so we do not flash the sign-in form for an existing session.
   if (!isaAuthLoaded || !isLoaded) return null;
   if (isSignedIn) return <Navigate to="/" replace />;
 

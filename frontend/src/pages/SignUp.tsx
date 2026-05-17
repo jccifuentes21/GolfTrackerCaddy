@@ -10,6 +10,8 @@ interface UserForm {
   confirmPassword: string;
 }
 
+// SignUpPage is a two-step flow: create credentials, then verify the email code.
+// Clerk owns account creation; this page controls form state, validation, and navigation.
 export default function SignUpPage() {
   const { signUp, isLoaded, setActive } = useSignUp();
   const { isSignedIn, isLoaded: isaAuthLoaded } = useAuth();
@@ -29,12 +31,15 @@ export default function SignUpPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setPasswordError("");
+    // Confirming password locally avoids a round trip for the most common user typo.
     if (userForm.password !== userForm.confirmPassword) {
       setPasswordError("Passwords do not match");
       return;
     }
     setLoading(true);
     try {
+      // Creating the user does not immediately create an active session.
+      // Clerk requires email verification first for this flow.
       await signUp!.create({
         emailAddress: userForm.email,
         password: userForm.password,
@@ -55,6 +60,7 @@ export default function SignUpPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      // attemptEmailAddressVerification exchanges the code for a completed sign-up result.
       const result = await signUp!.attemptEmailAddressVerification({ code });
       if (result.status === "complete") {
         await setActive!({ session: result.createdSessionId });
@@ -75,6 +81,7 @@ export default function SignUpPage() {
 
   const handleGoogleSignup = async () => {
     try {
+      // OAuth sign-up shares the same callback route as sign-in.
       await signUp!.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
@@ -86,6 +93,7 @@ export default function SignUpPage() {
     }
   };
 
+  // Do not render auth forms until Clerk has finished checking the current session.
   if (!isaAuthLoaded || !isLoaded) return null;
   if (isSignedIn) return <Navigate to="/" replace />;
 

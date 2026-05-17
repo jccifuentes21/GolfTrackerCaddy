@@ -8,7 +8,9 @@ import type { APICourse, SearchResponse } from "../types/api.gen";
 import type { Course, Tee } from "../types/model.gen";
 import styles from "../styles/pages/course-search.module.scss";
 
+// Search waits until the query is specific enough to avoid noisy API calls.
 const MIN_QUERY_LENGTH = 3;
+// Debouncing groups fast keystrokes into one request instead of calling the API per letter.
 const DEBOUNCE_MS = 300;
 
 export default function CourseSearch() {
@@ -17,6 +19,8 @@ export default function CourseSearch() {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
+  // The cleanup cancels the previous timer when the user keeps typing.
+  // That is the core debounce pattern in React.
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQuery(query.trim()), DEBOUNCE_MS);
     return () => clearTimeout(id);
@@ -24,6 +28,8 @@ export default function CourseSearch() {
 
   const enabled = debouncedQuery.length >= MIN_QUERY_LENGTH;
 
+  // React Query owns server state here: loading, caching, refetching, and errors.
+  // The query key includes the search text so each term gets its own cache entry.
   const { data, isFetching, isError, errorUpdatedAt } =
     useQuery<SearchResponse>({
       queryKey: ["courses", "search", debouncedQuery],
@@ -53,6 +59,8 @@ export default function CourseSearch() {
 
   const setSelectedCourse = useRoundStore((s) => s.setSelectedCourse);
 
+  // Selecting a course writes it to the backend cache first.
+  // The response gives us app-owned Course and Tee records, which StartRound needs next.
   const saveMutation = useMutation({
     mutationFn: async (course: APICourse) => {
       const res = await client.post<{ course: Course; tees: Tee[] }>(
@@ -74,6 +82,7 @@ export default function CourseSearch() {
     saveMutation.mutate(course);
   };
 
+  // Boolean render flags make the JSX state machine easier to read than nested conditions.
   const showIdle = !enabled;
   const showSearching = enabled && isFetching;
   const showEmpty =

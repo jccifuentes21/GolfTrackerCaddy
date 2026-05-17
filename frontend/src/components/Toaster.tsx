@@ -11,6 +11,8 @@ type ToastEntry = {
   onRemove: (id: string) => void
 }
 
+// ToastItem keeps local open state because Radix controls entrance, exit, and swipe lifecycle.
+// The global store only needs to know when the toast should be fully removed.
 function ToastItem({ id, title, description, type, onRemove }: ToastEntry) {
   const [open, setOpen] = useState(true)
 
@@ -19,6 +21,7 @@ function ToastItem({ id, title, description, type, onRemove }: ToastEntry) {
       open={open}
       onOpenChange={(isOpen) => {
         setOpen(isOpen)
+        // Wait for the close animation before removing the item from the array.
         if (!isOpen) setTimeout(() => onRemove(id), 220)
       }}
       className={`${styles.root} ${styles[type]}`}
@@ -40,6 +43,8 @@ function ToastItem({ id, title, description, type, onRemove }: ToastEntry) {
   )
 }
 
+// Toaster subscribes to global toast state and renders the Radix viewport once.
+// Pages call useToast(); they do not need to import Radix or know about layout.
 export default function Toaster() {
   const { toasts, removeToast } = useToastStore()
 

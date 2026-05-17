@@ -1,4 +1,5 @@
-// Plus Jakarta Sans + Playfair Display are loaded via Google Fonts in index.html
+// Plus Jakarta Sans + Playfair Display are loaded via Google Fonts in index.html.
+// This file sets global type defaults; page modules still choose layout-specific sizes.
 
 html {
   font-family: var(--font-sans);
@@ -46,6 +47,7 @@ h6 {
 }
 
 p {
+  // Paragraphs default to secondary text so body copy sits below headings in hierarchy.
   line-height: var(--leading-relaxed);
   color: var(--clr-text-secondary);
 }

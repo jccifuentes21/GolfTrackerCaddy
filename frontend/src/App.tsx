@@ -14,6 +14,8 @@ import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
 import Toaster from "./components/Toaster";
 
+// ProtectedRoute is a small auth boundary around pages that require a signed-in user.
+// Keeping it here makes the route table easy to scan and avoids repeating Clerk checks per page.
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return (
     <>
@@ -28,9 +30,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <>
+      {/* React Router maps URLs to page components. Dynamic segments like :roundId
+          become params that pages can read with useParams(). */}
       <Routes>
         <Route path="/sign-in" element={<SignInPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
+        {/* Clerk redirects OAuth and SSO providers back here before completing the session. */}
         <Route
           path="/sso-callback"
           element={<AuthenticateWithRedirectCallback />}
@@ -75,8 +80,10 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        {/* Unknown URLs fall back to the app home instead of showing a blank page. */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      {/* The toaster is mounted once at app level so any page or hook can enqueue messages. */}
       <Toaster />
     </>
   );

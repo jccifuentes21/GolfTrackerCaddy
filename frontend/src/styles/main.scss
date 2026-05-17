@@ -2,6 +2,8 @@
 @use "reset";
 @use "typography";
 
+// main.scss is the global entrypoint imported by main.tsx.
+// Component and page styles stay in CSS modules so selectors do not leak across screens.
 body {
   background-color: var(--clr-bg);
   color: var(--clr-text-primary);
