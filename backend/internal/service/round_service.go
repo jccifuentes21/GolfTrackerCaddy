@@ -17,12 +17,12 @@ type RoundService struct {
 	rounds      *store.RoundStore
 	holes       *store.HoleStore
 	courseHoles *store.CourseHoleStore
-	ai          *ai.Service
+	ai          ai.Analyzer
 }
 
 // NewRoundService wires the three dependencies. aiService is named to avoid
 // shadowing the ai package name in the function body.
-func NewRoundService(rounds *store.RoundStore, holes *store.HoleStore, courseHoles *store.CourseHoleStore, aiService *ai.Service) *RoundService {
+func NewRoundService(rounds *store.RoundStore, holes *store.HoleStore, courseHoles *store.CourseHoleStore, aiService ai.Analyzer) *RoundService {
 	return &RoundService{
 		rounds:      rounds,
 		holes:       holes,
