@@ -3,6 +3,10 @@
 //////////
 // source: course.go
 
+/**
+ * Course is cached course identity and location data from the external Golf Course API.
+ * It is intentionally separate from Tee because one course can have many playable tee sets.
+ */
 export interface Course {
   id: string;
   club_name: string;
@@ -17,6 +21,10 @@ export interface Course {
 //////////
 // source: course_hole.go
 
+/**
+ * CourseHole is static hole metadata for a tee set.
+ * This is different from Hole, which stores what the user scored during a specific round.
+ */
 export interface CourseHole {
   id: string;
   tee_id: string;
@@ -31,6 +39,7 @@ export interface CourseHole {
 
 /**
  * Hole is one hole scored within a round.
+ * These are user-entered performance stats, so they are stored separately from static CourseHole data.
  */
 export interface Hole {
   id: string;
@@ -38,21 +47,25 @@ export interface Hole {
   hole_number: number /* int */;
   score: number /* int */;
   fairway_hit: boolean;
+  fairway_miss: string;
   gir: boolean;
   putts: number /* int */;
-  miss_direction: string;
+  green_miss: string;
+  penalties: number /* int */;
 }
 
 //////////
 // source: round.go
 
 /**
- * Round is a golf round aggregate.
+ * Round is the parent record for one played round.
+ * It references Tee instead of Course because score context depends on which tee set was played.
  */
 export interface Round {
   id: string;
   tee_id: string;
   user_id: string;
+  course_name: string;
   date: string;
   input_mode: string;
   created_at: string;
@@ -61,6 +74,10 @@ export interface Round {
 //////////
 // source: tee.go
 
+/**
+ * Tee represents one playable tee set for a course.
+ * Rating, slope, yardage, and par belong here because they change by tee, not just by course.
+ */
 export interface Tee {
   id: string;
   course_id: string;

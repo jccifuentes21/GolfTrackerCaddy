@@ -139,6 +139,7 @@ const StartRound = () => {
     mutationFn: async (payload: {
       tee_id: string;
       user_id: string;
+      course_name: string;
       date: string;
       input_mode: string;
     }) => {
@@ -190,6 +191,7 @@ const StartRound = () => {
     createRoundMutation.mutate({
       tee_id: selectedTeeId,
       user_id: user.id,
+      course_name: selectedCourse.club_name || selectedCourse.course_name,
       date,
       input_mode: inputMode,
     });

@@ -8,7 +8,9 @@ type Hole struct {
 	HoleNumber    int    `json:"hole_number"`
 	Score         int    `json:"score"`
 	FairwayHit    bool   `json:"fairway_hit"`
+	FairwayMiss   string `json:"fairway_miss"`
 	GIR           bool   `json:"gir"`
 	Putts         int    `json:"putts"`
-	MissDirection string `json:"miss_direction"`
+	GreenMiss     string `json:"green_miss"`
+	Penalties     int    `json:"penalties"`
 }

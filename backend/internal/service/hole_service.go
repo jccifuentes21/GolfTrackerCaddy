@@ -19,7 +19,7 @@ func NewHoleService(holes *store.HoleStore) *HoleService {
 	return &HoleService{holes: holes}
 }
 
-func (s *HoleService) SaveHole(ctx context.Context, roundID string, holeNumber int, score int, fairwayHit bool, GIR bool, putts int, missDirection string) (*model.Hole, error) {
+func (s *HoleService) SaveHole(ctx context.Context, roundID string, holeNumber int, score int, fairwayHit bool, fairwayMiss string, GIR bool, putts int, greenMiss string, penalties int) (*model.Hole, error) {
 	// A new ID is generated on every save attempt, but the store's upsert means the existing row wins
 	// when this round and hole number already exist.
 	h := &model.Hole{
@@ -28,9 +28,11 @@ func (s *HoleService) SaveHole(ctx context.Context, roundID string, holeNumber i
 		HoleNumber:    holeNumber,
 		Score:         score,
 		FairwayHit:    fairwayHit,
+		FairwayMiss:   fairwayMiss,
 		GIR:           GIR,
 		Putts:         putts,
-		MissDirection: missDirection,
+		GreenMiss: greenMiss,
+		Penalties:     penalties,
 	}
 	if err := s.holes.Create(ctx, h); err != nil {
 		return nil, fmt.Errorf("failed to save hole for round %s, hole %d: %w", roundID, holeNumber, err)

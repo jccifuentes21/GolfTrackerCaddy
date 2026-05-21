@@ -104,6 +104,14 @@ func (s *CourseService) SaveCourse(ctx context.Context, apiCourse *api.APICourse
 	return &course, savedTees, nil
 }
 
+func (s *CourseService) GetCourse(ctx context.Context, courseID string) (*model.Course, error) {
+	return s.courses.GetByID(ctx, courseID)
+}
+
+func (s *CourseService) GetTee(ctx context.Context, teeID string) (*model.Tee, error) {
+	return s.tees.GetByID(ctx, teeID)
+}
+
 func (s *CourseService) ListTeesByCourse(ctx context.Context, courseID string) ([]model.Tee, error) {
 	return s.tees.ListByCourse(ctx, courseID)
 }

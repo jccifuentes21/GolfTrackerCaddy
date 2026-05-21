@@ -1,0 +1,1 @@
+ALTER TABLE rounds ADD COLUMN course_name TEXT NOT NULL DEFAULT '';

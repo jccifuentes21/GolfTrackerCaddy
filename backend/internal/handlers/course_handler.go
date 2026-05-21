@@ -82,6 +82,40 @@ func (h *CourseHandler) ListTees(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(tees)
 }
 
+func (h *CourseHandler) GetCourse(w http.ResponseWriter, r *http.Request) {
+	courseID := r.PathValue("id")
+	if courseID == "" {
+		http.Error(w, "Missing course ID", http.StatusBadRequest)
+		return
+	}
+
+	course, err := h.courses.GetCourse(r.Context(), courseID)
+	if err != nil {
+		http.Error(w, "Failed to fetch course", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(course)
+}
+
+func (h *CourseHandler) GetTee(w http.ResponseWriter, r *http.Request) {
+	teeID := r.PathValue("id")
+	if teeID == "" {
+		http.Error(w, "Missing tee ID", http.StatusBadRequest)
+		return
+	}
+
+	tee, err := h.courses.GetTee(r.Context(), teeID)
+	if err != nil {
+		http.Error(w, "Failed to fetch tee", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(tee)
+}
+
 func (h *CourseHandler) ListTeeHoles(w http.ResponseWriter, r *http.Request) {
 	// This endpoint returns the scorecard layout for a selected tee before the user enters scores.
 	teeID := r.PathValue("id")

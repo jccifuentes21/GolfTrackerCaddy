@@ -4,13 +4,15 @@
 // source: golf_course_client.go
 
 /**
- * CourseSearchResponse is the top-level response from the API
+ * SearchResponse mirrors the top-level JSON returned by the Golf Course API.
+ * Keeping external API shapes in this package prevents them from leaking into the domain models.
  */
 export interface SearchResponse {
   courses: APICourse[];
 }
 /**
- * APICourse is a single course from the API response
+ * APICourse is one raw course result from the external API.
+ * The service layer converts this shape into the app's Course, Tee, and CourseHole models.
  */
 export interface APICourse {
   id: number /* int */;
@@ -19,16 +21,26 @@ export interface APICourse {
   location: APILocation;
   tees: APITees;
 }
+/**
+ * APILocation is nested because that is how the upstream API structures address data.
+ */
 export interface APILocation {
   address: string;
   city: string;
   state: string;
   country: string;
 }
+/**
+ * APITees preserves the API's male and female tee grouping.
+ * The app later deduplicates by tee name because the same tee can appear in both groups.
+ */
 export interface APITees {
   male: APITee[];
   female: APITee[];
 }
+/**
+ * APITee is the upstream tee payload before it is saved as a database Tee.
+ */
 export interface APITee {
   tee_name: string;
   course_rating: number /* float64 */;
@@ -37,10 +49,18 @@ export interface APITee {
   par_total: number /* int */;
   holes: APIHole[];
 }
+/**
+ * APIHole is static course metadata, not a played hole score.
+ * Played hole data lives in model.Hole after a user starts a round.
+ */
 export interface APIHole {
   par: number /* int */;
   yardage: number /* int */;
   handicap: number /* int */;
 }
+/**
+ * GolfCourseClient wraps the external HTTP dependency.
+ * That keeps request construction and API authentication out of handlers and services.
+ */
 export interface GolfCourseClient {
 }

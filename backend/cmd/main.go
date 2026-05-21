@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/jccifuentes21/GolfTrackerCaddy/internal/ai"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/api"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/db"
 	handler "github.com/jccifuentes21/GolfTrackerCaddy/internal/handlers"
@@ -56,7 +57,7 @@ func main() {
 	// Services own business workflows. CourseService is intentionally wider because saving a course
 	// also saves tees and static hole data from the external Golf Course API.
 	courseService := service.NewCourseService(courseStore, teeStore, courseHoleStore, api.NewGolfCourseClient(apiKey))
-	roundService := service.NewRoundService(roundStore)
+	roundService := service.NewRoundService(roundStore, holeStore, courseHoleStore, ai.NewService())
 	holeService := service.NewHoleService(holeStore)
 
 	// Handlers own HTTP concerns: request parsing, status codes, and JSON responses.
@@ -69,8 +70,10 @@ func main() {
 	// Go 1.22+ ServeMux supports method-aware route patterns like "GET /courses/search".
 	// This avoids a third-party router while the API surface is still small.
 	mux.HandleFunc("GET /courses/search", courseHandler.Search)
+	mux.HandleFunc("GET /courses/{id}", courseHandler.GetCourse)
 	mux.HandleFunc("POST /courses", courseHandler.Save)
 	mux.HandleFunc("GET /courses/{id}/tees", courseHandler.ListTees)
+	mux.HandleFunc("GET /tees/{id}", courseHandler.GetTee)
 	mux.HandleFunc("GET /tees/{id}/holes", courseHandler.ListTeeHoles)
 
 	mux.HandleFunc("POST /rounds", roundHandler.Create)
@@ -79,6 +82,8 @@ func main() {
 
 	mux.HandleFunc("POST /rounds/{round_id}/holes", holeHandler.Create)
 	mux.HandleFunc("GET /rounds/{round_id}/holes", holeHandler.List)
+
+	mux.HandleFunc("POST /rounds/{id}/analyze", roundHandler.Analyze)
 
 	port := os.Getenv("PORT")
 	if port == "" {

@@ -1,0 +1,462 @@
+@use '../tokens' as *;
+@use '../mixins' as *;
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+.page {
+  @include flex-col;
+  min-height: 100dvh;
+  background: var(--clr-bg);
+  // Bottom padding so the fixed Done bar never covers content on mobile.
+  padding-bottom: 88px;
+
+  @include md {
+    padding-bottom: 0;
+  }
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.header {
+  background: var(--clr-green-ground);
+  padding: var(--sp-3) var(--sp-4) var(--sp-5);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  @include md {
+    padding-left: max(var(--sp-6), calc((100% - 640px) / 2 + var(--sp-6)));
+    padding-right: max(var(--sp-6), calc((100% - 640px) / 2 + var(--sp-6)));
+  }
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.back {
+  flex-shrink: 0;
+  @include flex-center;
+  width: 44px;
+  height: 44px;
+  margin-left: calc(var(--sp-2) * -1);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--clr-parchment);
+  cursor: pointer;
+  transition: background 160ms var(--ease-out-expo), transform 140ms var(--ease-out-expo);
+
+  svg { display: block; }
+  &:active { transform: scale(0.94); }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { background: oklch(97.5% 0.018 75 / 0.12); }
+  }
+}
+
+.headerInfo {
+  @include flex-col;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.headerCourse {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: oklch(97.5% 0.018 75 / 0.65);
+  @include truncate;
+}
+
+.headerTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-normal);
+  color: var(--clr-parchment);
+  letter-spacing: -0.01em;
+}
+
+// Scorecard/stats toggle button — mirrors the icon toggle in HoleEntry
+.viewToggle {
+  flex-shrink: 0;
+  @include flex-center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--clr-parchment);
+  cursor: pointer;
+  transition: background 160ms var(--ease-out-expo);
+
+  svg { display: block; }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { background: oklch(97.5% 0.018 75 / 0.12); }
+  }
+}
+
+// ── Body ──────────────────────────────────────────────────────────────────────
+.body {
+  @include flex-col;
+  flex: 1;
+  gap: var(--sp-6);
+  padding: var(--sp-6) var(--sp-4) var(--sp-8);
+
+  @include md {
+    padding-left: max(var(--sp-6), calc((100% - 640px) / 2 + var(--sp-6)));
+    padding-right: max(var(--sp-6), calc((100% - 640px) / 2 + var(--sp-6)));
+  }
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+.statsSection {
+  @include flex-col;
+  gap: var(--sp-3);
+  animation: fadeUp 240ms var(--ease-out-expo) both;
+}
+
+// The total score card spans the full width for visual prominence.
+.statCardWide {
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-5) var(--sp-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.statScoreRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin-top: var(--sp-1);
+}
+
+// Large score number — display font, prominent
+.statValueLarge {
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-normal);
+  color: var(--clr-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+// +/- par badge next to the score
+.scoreBadge {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-secondary);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--radius-sm);
+  background: var(--clr-surface-raised);
+}
+
+.scoreBadgeUnder {
+  color: var(--clr-success);
+  background: oklch(from var(--clr-success) l c h / 0.1);
+}
+
+.scoreBadgeOver {
+  color: var(--clr-danger);
+  background: oklch(from var(--clr-danger) l c h / 0.08);
+}
+
+// 2-column grid for secondary stats
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+
+.statCard {
+  @include flex-col;
+  gap: 2px;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-4) var(--sp-5);
+  box-shadow: var(--shadow-sm);
+}
+
+.statLabel {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--clr-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-normal);
+  color: var(--clr-text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.statSub {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  color: var(--clr-text-tertiary);
+}
+
+// ── AI section ────────────────────────────────────────────────────────────────
+.aiSection {
+  @include flex-col;
+  gap: var(--sp-4);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--clr-border);
+  animation: fadeUp 240ms 80ms var(--ease-out-expo) both;
+}
+
+.aiNote {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--clr-text-tertiary);
+  text-align: center;
+  padding: var(--sp-2) 0;
+}
+
+.analyzeBtn {
+  width: 100%;
+  padding: var(--sp-4);
+  background: var(--clr-accent);
+  color: var(--clr-accent-on);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background 160ms var(--ease-out-expo), transform 120ms var(--ease-out-expo);
+
+  &:active { transform: scale(0.98); }
+  &:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:disabled) { background: var(--clr-accent-hover); }
+  }
+}
+
+.analysisWrap {
+  @include flex-col;
+  gap: var(--sp-4);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-5) var(--sp-6);
+  box-shadow: var(--shadow-sm);
+  animation: fadeUp 280ms var(--ease-out-expo) both;
+}
+
+.analysisLabel {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--clr-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+// Plain prose output — line height is generous for readability.
+.analysisText {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--clr-text-primary);
+  line-height: var(--leading-relaxed);
+  white-space: pre-wrap; // preserves paragraph breaks from Claude's response
+}
+
+.reAnalyzeBtn {
+  align-self: flex-start;
+  padding: var(--sp-2) var(--sp-4);
+  background: transparent;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-full);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--clr-text-secondary);
+  cursor: pointer;
+  transition: border-color 160ms var(--ease-out-expo), color 160ms var(--ease-out-expo);
+
+  &:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(:disabled) {
+      border-color: var(--clr-text-primary);
+      color: var(--clr-text-primary);
+    }
+  }
+}
+
+// ── Done button ───────────────────────────────────────────────────────────────
+.doneBtn {
+  width: 100%;
+  padding: var(--sp-4);
+  background: var(--clr-accent);
+  color: var(--clr-accent-on);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background 160ms var(--ease-out-expo), transform 120ms var(--ease-out-expo);
+
+  &:active { transform: scale(0.98); }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { background: var(--clr-accent-hover); }
+  }
+}
+
+// Desktop inline CTA — hidden on mobile (uses fixed bar instead)
+.ctaDesktop {
+  display: none;
+
+  @include md {
+    display: block;
+  }
+}
+
+// Fixed bottom bar — mobile only
+.ctaBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--sp-3) var(--sp-4) calc(var(--sp-3) + env(safe-area-inset-bottom));
+  background: var(--clr-bg);
+  border-top: 1px solid var(--clr-border);
+
+  @include md {
+    display: none;
+  }
+}
+
+// ── Scorecard ─────────────────────────────────────────────────────────────────
+// Mirrors the scorecard styles in hole-entry — horizontally scrollable grid.
+
+.scorecardWrap {
+  @include flex-col;
+  gap: var(--sp-4);
+  padding: var(--sp-4) 0;
+  animation: fadeUp 240ms var(--ease-out-expo) both;
+}
+
+.scorecardHint {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  color: var(--clr-text-tertiary);
+  text-align: center;
+  padding-bottom: var(--sp-2);
+}
+
+.scorecardHalf {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  background: var(--clr-surface);
+}
+
+.scorecardRow {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--clr-border-subtle);
+
+  &:last-child { border-bottom: none; }
+}
+
+.scorecardLabel {
+  flex-shrink: 0;
+  width: 40px;
+  padding: var(--sp-2) var(--sp-2) var(--sp-2) var(--sp-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  color: var(--clr-text-tertiary);
+}
+
+.scorecardCell {
+  flex: 1;
+  min-width: 28px;
+  text-align: center;
+  padding: var(--sp-2) var(--sp-1);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--clr-text-secondary);
+}
+
+// Hole number cells are clickable — they navigate to that hole for editing.
+.scorecardHoleNum {
+  font-weight: var(--weight-medium);
+  color: var(--clr-text-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 120ms var(--ease-out-expo);
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { background: var(--clr-surface-raised); color: var(--clr-text-primary); }
+  }
+}
+
+// User score cells are also tappable for editing, with color coding.
+.scorecardScore {
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-primary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: background 120ms var(--ease-out-expo);
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover { background: var(--clr-surface-raised); }
+  }
+}
+
+// Under par — birdie or better
+.under {
+  color: var(--clr-success);
+}
+
+// Double bogey or worse
+.double {
+  color: var(--clr-danger);
+}
+
+.scorecardTotal {
+  flex-shrink: 0;
+  width: 36px;
+  text-align: center;
+  padding: var(--sp-2) var(--sp-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-text-primary);
+  border-left: 1px solid var(--clr-border-subtle);
+}
+
+.scorecardTotalRow {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--clr-text-secondary);
+}

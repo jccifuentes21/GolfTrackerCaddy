@@ -22,10 +22,11 @@ func (h *RoundHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// This request DTO is local to the handler because it is an HTTP input shape,
 	// not a domain model. The service builds the actual model.Round.
 	var input struct {
-		TeeID     string `json:"tee_id"`
-		UserID    string `json:"user_id"`
-		Date      string `json:"date"`
-		InputMode string `json:"input_mode"`
+		TeeID      string `json:"tee_id"`
+		UserID     string `json:"user_id"`
+		CourseName string `json:"course_name"`
+		Date       string `json:"date"`
+		InputMode  string `json:"input_mode"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -41,7 +42,7 @@ func (h *RoundHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	round, err := h.rounds.CreateRound(r.Context(), input.TeeID, input.UserID, date, input.InputMode)
+	round, err := h.rounds.CreateRound(r.Context(), input.TeeID, input.UserID, input.CourseName, date, input.InputMode)
 	if err != nil {
 		http.Error(w, "Failed to create round", http.StatusInternalServerError)
 		return
@@ -73,4 +74,17 @@ func (h *RoundHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(rounds)
+}
+
+func (h *RoundHandler) Analyze(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	analysis, err := h.rounds.Analyze(r.Context(), id)
+	if err != nil {
+		http.Error(w, "Failed to analyze round", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"analysis": analysis})
 }

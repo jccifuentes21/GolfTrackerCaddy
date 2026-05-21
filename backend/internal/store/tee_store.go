@@ -30,6 +30,19 @@ func (s *TeeStore) Create(ctx context.Context, t *model.Tee) (string, error) {
 	return id, err
 }
 
+func (s *TeeStore) GetByID(ctx context.Context, id string) (*model.Tee, error) {
+	var t model.Tee
+	err := s.db.QueryRow(ctx, `
+		SELECT id, course_id, tee_name, course_rating, slope_rating, total_yards, par, created_at
+		FROM tees
+		WHERE id = $1
+	`, id).Scan(&t.ID, &t.CourseID, &t.TeeName, &t.CourseRating, &t.SlopeRating, &t.TotalYards, &t.Par, &t.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &t, nil
+}
+
 func (s *TeeStore) ListByCourse(ctx context.Context, courseID string) ([]model.Tee, error) {
 
 	// Query returns a cursor-like Rows value. Closing it returns the connection to the pool.

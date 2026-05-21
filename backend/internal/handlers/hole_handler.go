@@ -26,9 +26,11 @@ func (h *HoleHandler) Create(w http.ResponseWriter, r *http.Request) {
 		HoleNumber    int    `json:"hole_number"`
 		Score         int    `json:"score"`
 		FairwayHit    bool   `json:"fairway_hit"`
+		FairwayMiss   string `json:"fairway_miss"`
 		GIR           bool   `json:"gir"`
 		Putts         int    `json:"putts"`
-		MissDirection string `json:"miss_direction"`
+		GreenMiss     string `json:"green_miss"`
+		Penalties     int    `json:"penalties"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -36,7 +38,7 @@ func (h *HoleHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hole, err := h.holes.SaveHole(r.Context(), roundID, input.HoleNumber, input.Score, input.FairwayHit, input.GIR, input.Putts, input.MissDirection)
+	hole, err := h.holes.SaveHole(r.Context(), roundID, input.HoleNumber, input.Score, input.FairwayHit, input.FairwayMiss, input.GIR, input.Putts, input.GreenMiss, input.Penalties)
 	if err != nil {
 		http.Error(w, "Failed to save hole", http.StatusInternalServerError)
 		return
