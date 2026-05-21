@@ -49,7 +49,7 @@ const emptyHole = (n: number): HoleData => ({
   gir: null,
   putts: null,
   greenMiss: null,
-  penalties: 0,
+  penalties: 0, // Penalties default to zero because most holes have none.
 });
 
 // Why create<RoundStore>()() with two call sites?

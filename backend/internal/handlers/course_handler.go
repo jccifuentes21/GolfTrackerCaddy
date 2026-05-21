@@ -82,6 +82,8 @@ func (h *CourseHandler) ListTees(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(tees)
 }
 
+// GetCourse returns one cached course by id. Used when the frontend needs course data
+// without repeating the external Golf Course API search flow.
 func (h *CourseHandler) GetCourse(w http.ResponseWriter, r *http.Request) {
 	courseID := r.PathValue("id")
 	if courseID == "" {
@@ -99,6 +101,7 @@ func (h *CourseHandler) GetCourse(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(course)
 }
 
+// GetTee returns one tee set by id. The dashboard uses this to read par_total for to-par display.
 func (h *CourseHandler) GetTee(w http.ResponseWriter, r *http.Request) {
 	teeID := r.PathValue("id")
 	if teeID == "" {

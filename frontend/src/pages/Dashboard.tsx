@@ -42,6 +42,7 @@ export default function Dashboard() {
   });
 
   // Fetch holes for each round in parallel to compute total score.
+  // useQueries preserves array order, so holesQueries[i] always matches rounds[i].
   const holesQueries = useQueries({
     queries: rounds.map((round) => ({
       queryKey: ["holes", round.id],

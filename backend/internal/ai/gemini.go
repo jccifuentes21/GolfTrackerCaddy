@@ -20,6 +20,8 @@ type GeminiService struct {
 // NewGeminiService reads GEMINI_API_KEY from the environment.
 func NewGeminiService() *GeminiService {
 	ctx := context.Background()
+	// Client creation happens once at startup. A fatal here is acceptable because the app
+	// cannot analyze rounds without a working AI backend when Gemini is selected.
 	client, err := genai.NewClient(ctx, option.WithAPIKey(os.Getenv("GEMINI_API_KEY")))
 	if err != nil {
 		log.Fatalf("Failed to create Gemini client: %v", err)
@@ -28,6 +30,7 @@ func NewGeminiService() *GeminiService {
 }
 
 func (s *GeminiService) Analyze(ctx context.Context, round *model.Round, holes []model.Hole, courseHoles []model.CourseHole) (string, error) {
+	// Same prompt builder as ClaudeService keeps provider swaps isolated to transport code.
 	prompt := buildPrompt(round, holes, courseHoles)
 
 	model := s.client.GenerativeModel("gemini-3.5-flash")

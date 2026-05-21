@@ -30,6 +30,7 @@ func (s *TeeStore) Create(ctx context.Context, t *model.Tee) (string, error) {
 	return id, err
 }
 
+// GetByID fetches one tee row. Dashboard and summary screens use this for par context.
 func (s *TeeStore) GetByID(ctx context.Context, id string) (*model.Tee, error) {
 	var t model.Tee
 	err := s.db.QueryRow(ctx, `

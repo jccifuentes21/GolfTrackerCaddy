@@ -1,6 +1,7 @@
 @use '../tokens' as *;
 @use '../mixins' as *;
 
+// Round summary styles mirror HoleEntry's scorecard patterns but add stat cards and AI analysis layout.
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }

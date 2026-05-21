@@ -252,6 +252,7 @@ const HoleForm = ({
         <Stepper
           value={score}
           onChange={(v) => onChange("score", v)}
+          // Score must be at least putts because every stroke on the green counts toward total score.
           min={Math.max(1, putts ?? 0)}
           max={20}
           label="Score"

@@ -186,11 +186,12 @@ const StartRound = () => {
     // These checks are technically redundant (the button is disabled if any
     // of these are missing) but TypeScript needs the narrowing, and explicit
     // guards make the code easier to reason about in an interview setting.
-    if (!selectedTeeId || !inputMode || !user) return;
+    if (!selectedTeeId || !inputMode || !user || !selectedCourse) return;
 
     createRoundMutation.mutate({
       tee_id: selectedTeeId,
       user_id: user.id,
+      // Stored on the round so dashboard/hole entry can show course name after a refresh.
       course_name: selectedCourse.club_name || selectedCourse.course_name,
       date,
       input_mode: inputMode,

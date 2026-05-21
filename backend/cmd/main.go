@@ -83,6 +83,7 @@ func main() {
 	mux.HandleFunc("POST /rounds/{round_id}/holes", holeHandler.Create)
 	mux.HandleFunc("GET /rounds/{round_id}/holes", holeHandler.List)
 
+	// Manual trigger for post-round AI analysis. The service gathers holes and course context first.
 	mux.HandleFunc("POST /rounds/{id}/analyze", roundHandler.Analyze)
 
 	port := os.Getenv("PORT")

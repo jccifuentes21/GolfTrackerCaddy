@@ -76,6 +76,8 @@ func (h *RoundHandler) List(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(rounds)
 }
 
+// Analyze triggers post-round AI analysis. The handler returns plain text wrapped in JSON
+// so the frontend can display it without coupling to a specific model provider.
 func (h *RoundHandler) Analyze(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 

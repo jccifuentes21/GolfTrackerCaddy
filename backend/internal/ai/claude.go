@@ -20,6 +20,7 @@ func NewClaudeService() *ClaudeService {
 }
 
 func (s *ClaudeService) Analyze(ctx context.Context, round *model.Round, holes []model.Hole, courseHoles []model.CourseHole) (string, error) {
+	// Prompt construction is shared so switching backends does not change analysis content.
 	prompt := buildPrompt(round, holes, courseHoles)
 
 	response, err := s.client.Messages.New(ctx, anthropic.MessageNewParams{

@@ -17,6 +17,7 @@ func buildPrompt(round *model.Round, holes []model.Hole, courseHoles []model.Cou
 	}
 
 	var sb strings.Builder
+	// strings.Builder avoids repeated string concatenation while assembling the hole block.
 	for _, h := range holes {
 		ch := parByHole[h.HoleNumber]
 		diff := h.Score - ch.Par
@@ -41,7 +42,7 @@ func buildPrompt(round *model.Round, holes []model.Hole, courseHoles []model.Cou
 	}
 
 	return fmt.Sprintf(
-`You are a professional experienced golf caddy reviewing a player's round. Analyze the following hole-by-hole data and provide an honest, direct debrief in plain text with no markdown formatting.
+		`You are a professional experienced golf caddy reviewing a player's round. Analyze the following hole-by-hole data and provide an honest, direct debrief in plain text with no markdown formatting.
 
 Cover three things:
 1. A brief overview of the round (total score vs par, general shape).
