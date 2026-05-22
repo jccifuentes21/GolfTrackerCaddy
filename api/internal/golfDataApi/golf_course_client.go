@@ -1,4 +1,4 @@
-package api
+package golfDataApi
 
 import (
 	"context"

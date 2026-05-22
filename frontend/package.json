@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "gen:types": "cd ../backend && tygo generate"
+    "gen:types": "cd ../api && tygo generate"
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.61.6",

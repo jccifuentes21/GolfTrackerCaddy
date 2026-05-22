@@ -40,10 +40,10 @@ Migrations run automatically on backend startup via `db.RunMigrations`.
 ## Local Dev
 1. Copy `.env.example` to `.env` and fill in values
 2. Start Postgres: `docker-compose up -d`
-3. Start backend: `cd backend && go run ./cmd/main.go`
+3. Start API server: `cd api && go run ./cmd/main.go`
 4. Start frontend: `cd frontend && npm run dev`
 
 ## Notes
 - Backend routes are all prefixed with `/api` (e.g. `/api/rounds`)
 - CORS is configured via `CORS_ALLOWED_ORIGINS` env var (defaults to `http://localhost:5173`)
-- `go.mod` must stay in `backend/` — Vercel uses it to detect the Go service
+- `go.mod` must stay in `api/` - Vercel uses it to detect the Go service

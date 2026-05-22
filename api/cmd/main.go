@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/ai"
-	"github.com/jccifuentes21/GolfTrackerCaddy/internal/api"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/db"
+	"github.com/jccifuentes21/GolfTrackerCaddy/internal/golfDataApi"
 	handler "github.com/jccifuentes21/GolfTrackerCaddy/internal/handlers"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/middleware"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/service"
@@ -62,7 +62,7 @@ func main() {
 
 	// Services own business workflows. CourseService is intentionally wider because saving a course
 	// also saves tees and static hole data from the external Golf Course API.
-	courseService := service.NewCourseService(courseStore, teeStore, courseHoleStore, api.NewGolfCourseClient(apiKey))
+	courseService := service.NewCourseService(courseStore, teeStore, courseHoleStore, golfDataApi.NewGolfCourseClient(apiKey))
 	roundService := service.NewRoundService(roundStore, holeStore, courseHoleStore, ai.NewService())
 	holeService := service.NewHoleService(holeStore)
 

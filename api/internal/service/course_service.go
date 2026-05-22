@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/jccifuentes21/GolfTrackerCaddy/internal/api"
+	"github.com/jccifuentes21/GolfTrackerCaddy/internal/golfDataApi"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/model"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/store"
 )
@@ -16,12 +16,12 @@ type CourseService struct {
 	courses     *store.CourseStore
 	tees        *store.TeeStore
 	courseHoles *store.CourseHoleStore
-	apiClient   *api.GolfCourseClient
+	apiClient   *golfDataApi.GolfCourseClient
 }
 
 // NewCourseService receives every dependency it needs.
 // This makes the service easier to test because mocks or fakes can replace real stores later.
-func NewCourseService(courses *store.CourseStore, tees *store.TeeStore, courseHoles *store.CourseHoleStore, apiClient *api.GolfCourseClient) *CourseService {
+func NewCourseService(courses *store.CourseStore, tees *store.TeeStore, courseHoles *store.CourseHoleStore, apiClient *golfDataApi.GolfCourseClient) *CourseService {
 	return &CourseService{
 		courses:     courses,
 		tees:        tees,
@@ -30,13 +30,13 @@ func NewCourseService(courses *store.CourseStore, tees *store.TeeStore, courseHo
 	}
 }
 
-func (s *CourseService) SearchCourses(ctx context.Context, query string) (*api.SearchResponse, error) {
+func (s *CourseService) SearchCourses(ctx context.Context, query string) (*golfDataApi.SearchResponse, error) {
 	// For now search is a pass-through to the external API.
 	// Keeping this method still helps preserve the handler-service-store layering.
 	return s.apiClient.SearchCourses(ctx, query)
 }
 
-func (s *CourseService) SaveCourse(ctx context.Context, apiCourse *api.APICourse) (*model.Course, []model.Tee, error) {
+func (s *CourseService) SaveCourse(ctx context.Context, apiCourse *golfDataApi.APICourse) (*model.Course, []model.Tee, error) {
 	// Translate external API data into the app's own domain model before saving.
 	// That protects the database layer if the upstream API shape changes later.
 	course := model.Course{

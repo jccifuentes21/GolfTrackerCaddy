@@ -47,11 +47,11 @@ export interface Hole {
   hole_number: number /* int */;
   score: number /* int */;
   fairway_hit: boolean;
-  fairway_miss: string;
+  fairway_miss: string; // left, right, or none. Only meaningful when fairway_hit is false.
   gir: boolean;
   putts: number /* int */;
-  green_miss: string;
-  penalties: number /* int */;
+  green_miss: string; // left, right, short, long, or none. Only meaningful when gir is false.
+  penalties: number /* int */; // Stroke-and-distance, lateral, or unplayable penalty strokes.
 }
 
 //////////
@@ -65,7 +65,7 @@ export interface Round {
   id: string;
   tee_id: string;
   user_id: string;
-  course_name: string;
+  course_name: string; // Denormalized for list views so the dashboard does not need a course join.
   date: string;
   input_mode: string;
   created_at: string;

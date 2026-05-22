@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/jccifuentes21/GolfTrackerCaddy/internal/api"
+	"github.com/jccifuentes21/GolfTrackerCaddy/internal/golfDataApi"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/model"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/service"
 )
@@ -44,7 +44,7 @@ type saveCourseResponse struct {
 }
 
 func (h *CourseHandler) Save(w http.ResponseWriter, r *http.Request) {
-	var input api.APICourse
+	var input golfDataApi.APICourse
 	// Decode maps request JSON into a Go struct using json tags.
 	// Bad JSON is a client error, so this returns 400 instead of 500.
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {

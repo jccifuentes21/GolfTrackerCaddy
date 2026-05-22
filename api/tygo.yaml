@@ -3,7 +3,7 @@ packages:
     output_path: "../frontend/src/types/model.gen.ts"
     type_mappings:
       time.Time: "string"
-  - path: "github.com/jccifuentes21/GolfTrackerCaddy/internal/api"
+  - path: "github.com/jccifuentes21/GolfTrackerCaddy/internal/golfDataApi"
     output_path: "../frontend/src/types/api.gen.ts"
     type_mappings:
       time.Time: "string"

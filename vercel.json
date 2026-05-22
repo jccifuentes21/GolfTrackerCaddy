@@ -5,7 +5,7 @@
       "routePrefix": "/"
     },
     "api": {
-      "entrypoint": "backend/cmd/main.go",
+      "entrypoint": "api/cmd/main.go",
       "routePrefix": "/api",
       "framework": "go"
     }
