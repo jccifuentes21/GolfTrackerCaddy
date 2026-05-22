@@ -21,7 +21,7 @@
 
 Example: `postgresql://postgres:[PASSWORD]@db.xxxx.supabase.co:5432/postgres?sslmode=disable`
 
-Migrations run automatically on backend startup via `db.RunMigrations`.
+Migrations run automatically on backend startup via `db.RunMigrations`. Migration files live in `api/internal/db/migrations/` and are embedded into the binary at compile time — no filesystem access needed at runtime.
 
 ## Vercel Setup
 1. New Project → import GitHub repo

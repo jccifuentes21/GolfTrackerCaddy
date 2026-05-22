@@ -73,24 +73,29 @@ func main() {
 
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("unmatched request: %s %s", r.Method, r.URL.Path)
+		http.NotFound(w, r)
+	})
+
 	// Go 1.22+ ServeMux supports method-aware route patterns like "GET /courses/search".
 	// This avoids a third-party router while the API surface is still small.
-	mux.HandleFunc("GET /api/courses/search", courseHandler.Search)
-	mux.HandleFunc("GET /api/courses/{id}", courseHandler.GetCourse)
-	mux.HandleFunc("POST /api/courses", courseHandler.Save)
-	mux.HandleFunc("GET /api/courses/{id}/tees", courseHandler.ListTees)
-	mux.HandleFunc("GET /api/tees/{id}", courseHandler.GetTee)
-	mux.HandleFunc("GET /api/tees/{id}/holes", courseHandler.ListTeeHoles)
+	mux.HandleFunc("GET /courses/search", courseHandler.Search)
+	mux.HandleFunc("GET /courses/{id}", courseHandler.GetCourse)
+	mux.HandleFunc("POST /courses", courseHandler.Save)
+	mux.HandleFunc("GET /courses/{id}/tees", courseHandler.ListTees)
+	mux.HandleFunc("GET /tees/{id}", courseHandler.GetTee)
+	mux.HandleFunc("GET /tees/{id}/holes", courseHandler.ListTeeHoles)
 
-	mux.HandleFunc("POST /api/rounds", roundHandler.Create)
-	mux.HandleFunc("GET /api/rounds", roundHandler.List)
-	mux.HandleFunc("GET /api/rounds/{id}", roundHandler.Get)
+	mux.HandleFunc("POST /rounds", roundHandler.Create)
+	mux.HandleFunc("GET /rounds", roundHandler.List)
+	mux.HandleFunc("GET /rounds/{id}", roundHandler.Get)
 
-	mux.HandleFunc("POST /api/rounds/{round_id}/holes", holeHandler.Create)
-	mux.HandleFunc("GET /api/rounds/{round_id}/holes", holeHandler.List)
+	mux.HandleFunc("POST /rounds/{round_id}/holes", holeHandler.Create)
+	mux.HandleFunc("GET /rounds/{round_id}/holes", holeHandler.List)
 
 	// Manual trigger for post-round AI analysis. The service gathers holes and course context first.
-	mux.HandleFunc("POST /api/rounds/{id}/analyze", roundHandler.Analyze)
+	mux.HandleFunc("POST /rounds/{id}/analyze", roundHandler.Analyze)
 
 	port := os.Getenv("PORT")
 	if port == "" {

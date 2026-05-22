@@ -21,10 +21,9 @@ document.documentElement.setAttribute("data-theme", "light");
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // One quick retry on transient failure, not the default 3-with-backoff.
-      // Search overrides this to `retry: false` for fail-fast behavior.
       retry: 1,
       retryDelay: 500,
+      refetchOnWindowFocus: false,
     },
   },
 });
