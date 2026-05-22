@@ -10,6 +10,7 @@ import (
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/api"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/db"
 	handler "github.com/jccifuentes21/GolfTrackerCaddy/internal/handlers"
+	"github.com/jccifuentes21/GolfTrackerCaddy/internal/middleware"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/service"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/store"
 	"github.com/joho/godotenv"
@@ -26,6 +27,11 @@ func main() {
 	databaseURL := os.Getenv("DATABASE_URL")
 	if databaseURL == "" {
 		log.Fatal("DATABASE_URL is not set")
+	}
+
+	authMiddleware, err := middleware.NewAuthMiddleware(os.Getenv("CLERK_JWKS_URL"))
+	if err != nil {
+		log.Fatalf("Failed to initialize auth middleware: %v", err)
 	}
 
 	// pgxpool manages a reusable pool of database connections.
@@ -110,7 +116,10 @@ func main() {
 	})
 
 	log.Printf("Starting server on port %s (CORS allowed: %v)", port, allowedOrigins)
-	if err := http.ListenAndServe(":"+port, corsHandler.Handler(mux)); err != nil {
+
+	handler := corsHandler.Handler(authMiddleware.Wrap(mux))
+
+	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }

@@ -7,7 +7,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
-import { useUser } from "@clerk/clerk-react";
 import client from "../api/client";
 import { useToast } from "../hooks/useToast";
 import { useRoundStore } from "../stores/roundStore";
@@ -82,7 +81,6 @@ const StartRound = () => {
   // We need user.id to pass to POST /rounds (the backend stores it on the round).
   // `isLoaded` tells us Clerk has finished its async auth check — never use
   // user before isLoaded is true or you'll get null at startup.
-  const { user, isLoaded } = useUser();
 
   // Pull what we need from the round store.
   // We read selectedCourse and tees (set by CourseSearch when the user picked
@@ -100,8 +98,8 @@ const StartRound = () => {
   // If there's only one tee, pre-select it so the user doesn't have to pick.
   // The function form of useState (lazy initializer) runs once before the first
   // render — no effect needed, no extra render cycle.
-  const [selectedTeeId, setSelectedTeeId] = useState<string | null>(
-    () => tees.length === 1 ? tees[0].id : null,
+  const [selectedTeeId, setSelectedTeeId] = useState<string | null>(() =>
+    tees.length === 1 ? tees[0].id : null,
   );
 
   // Date defaults to today in "YYYY-MM-DD" format, which is what the native
@@ -138,7 +136,6 @@ const StartRound = () => {
   const createRoundMutation = useMutation({
     mutationFn: async (payload: {
       tee_id: string;
-      user_id: string;
       course_name: string;
       date: string;
       input_mode: string;
@@ -176,21 +173,17 @@ const StartRound = () => {
   // inputMode to be submitted — the backend will accept any valid string or
   // we could default it here. Currently we require an explicit choice.
   const canSubmit =
-    !!selectedTeeId &&
-    !!inputMode &&
-    isLoaded &&
-    !createRoundMutation.isPending;
+    !!selectedTeeId && !!inputMode && !createRoundMutation.isPending;
 
   // ─── Submit handler ──────────────────────────────────────────────────────────
   const handleStartRound = () => {
     // These checks are technically redundant (the button is disabled if any
     // of these are missing) but TypeScript needs the narrowing, and explicit
     // guards make the code easier to reason about in an interview setting.
-    if (!selectedTeeId || !inputMode || !user || !selectedCourse) return;
+    if (!selectedTeeId || !inputMode || !selectedCourse) return;
 
     createRoundMutation.mutate({
       tee_id: selectedTeeId,
-      user_id: user.id,
       // Stored on the round so dashboard/hole entry can show course name after a refresh.
       course_name: selectedCourse.club_name || selectedCourse.course_name,
       date,
@@ -205,7 +198,6 @@ const StartRound = () => {
   // ─── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className={styles.page}>
-
       {/* ── Header: green ground, back button, course context ── */}
       <header className={styles.header}>
         <button
@@ -239,7 +231,6 @@ const StartRound = () => {
 
       {/* ── Body: the three decisions ── */}
       <div className={styles.body}>
-
         {/* ── Section 1: Tee picker ── */}
         <section className={styles.section}>
           <p className={styles.sectionLabel}>Playing from</p>
@@ -257,7 +248,8 @@ const StartRound = () => {
               <span className={styles.teeInfo}>
                 <span className={styles.teeName}>{tees[0].tee_name}</span>
                 <span className={styles.teeMeta}>
-                  {tees[0].course_rating} / {tees[0].slope_rating} · {tees[0].total_yards} yds · Par {tees[0].par}
+                  {tees[0].course_rating} / {tees[0].slope_rating} ·{" "}
+                  {tees[0].total_yards} yds · Par {tees[0].par}
                 </span>
               </span>
             </div>
@@ -288,7 +280,8 @@ const StartRound = () => {
                       <span className={styles.teeInfo}>
                         <span className={styles.teeName}>{tee.tee_name}</span>
                         <span className={styles.teeMeta}>
-                          {tee.course_rating} / {tee.slope_rating} · {tee.total_yards} yds · Par {tee.par}
+                          {tee.course_rating} / {tee.slope_rating} ·{" "}
+                          {tee.total_yards} yds · Par {tee.par}
                         </span>
                       </span>
 
@@ -296,7 +289,12 @@ const StartRound = () => {
                           Pure CSS in the SCSS — the aria-pressed attribute drives it. */}
                       <span className={styles.radio} aria-hidden="true">
                         {isSelected && (
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 12 12"
+                            fill="none"
+                          >
                             <path
                               d="M2 6l3 3 5-5"
                               stroke="currentColor"
@@ -325,7 +323,16 @@ const StartRound = () => {
               value="YYYY-MM-DD" is the required format for type="date". */}
           <div className={styles.dateField}>
             <span className={styles.dateIcon} aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
                 <line x1="16" y1="2" x2="16" y2="6" />
                 <line x1="8" y1="2" x2="8" y2="6" />
@@ -362,12 +369,19 @@ const StartRound = () => {
                   >
                     <span className={styles.modeInfo}>
                       <span className={styles.modeName}>{mode.label}</span>
-                      <span className={styles.modeDesc}>{mode.description}</span>
+                      <span className={styles.modeDesc}>
+                        {mode.description}
+                      </span>
                     </span>
 
                     <span className={styles.radio} aria-hidden="true">
                       {isSelected && (
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                        >
                           <path
                             d="M2 6l3 3 5-5"
                             stroke="currentColor"

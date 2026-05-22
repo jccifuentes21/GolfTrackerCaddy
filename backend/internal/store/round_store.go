@@ -41,13 +41,14 @@ func (s *RoundStore) GetByID(ctx context.Context, id string) (*model.Round, erro
 	return r, nil
 }
 
-func (s *RoundStore) List(ctx context.Context) ([]model.Round, error) {
+func (s *RoundStore) List(ctx context.Context, userID string) ([]model.Round, error) {
 	// Listing newest rounds first matches the dashboard mental model: recent play is most relevant.
 	rows, err := s.db.Query(ctx, `
 		SELECT id, tee_id, user_id, course_name, date, input_mode, created_at
 		FROM rounds
+		WHERE user_id = $1
 		ORDER BY date DESC
-	`)
+	`, userID)
 	if err != nil {
 		return nil, err
 	}

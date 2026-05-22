@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/jccifuentes21/GolfTrackerCaddy/internal/middleware"
 	"github.com/jccifuentes21/GolfTrackerCaddy/internal/service"
 )
 
@@ -23,10 +24,15 @@ func (h *RoundHandler) Create(w http.ResponseWriter, r *http.Request) {
 	// not a domain model. The service builds the actual model.Round.
 	var input struct {
 		TeeID      string `json:"tee_id"`
-		UserID     string `json:"user_id"`
 		CourseName string `json:"course_name"`
 		Date       string `json:"date"`
 		InputMode  string `json:"input_mode"`
+	}
+
+	userID, ok := r.Context().Value(middleware.UserIDKey).(string)
+	if !ok || userID == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
@@ -42,7 +48,7 @@ func (h *RoundHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	round, err := h.rounds.CreateRound(r.Context(), input.TeeID, input.UserID, input.CourseName, date, input.InputMode)
+	round, err := h.rounds.CreateRound(r.Context(), input.TeeID, userID, input.CourseName, date, input.InputMode)
 	if err != nil {
 		http.Error(w, "Failed to create round", http.StatusInternalServerError)
 		return
@@ -67,7 +73,12 @@ func (h *RoundHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 func (h *RoundHandler) List(w http.ResponseWriter, r *http.Request) {
 	// Listing rounds is a read-only collection endpoint.
-	rounds, err := h.rounds.ListRounds(r.Context())
+	userID, ok := r.Context().Value(middleware.UserIDKey).(string)
+	if !ok || userID == "" {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	rounds, err := h.rounds.ListRounds(r.Context(), userID)
 	if err != nil {
 		http.Error(w, "Failed to list rounds", http.StatusInternalServerError)
 		return

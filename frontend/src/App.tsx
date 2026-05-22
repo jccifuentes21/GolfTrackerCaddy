@@ -4,6 +4,7 @@ import {
   SignedOut,
   RedirectToSignIn,
   AuthenticateWithRedirectCallback,
+  useAuth,
 } from "@clerk/clerk-react";
 import Dashboard from "./pages/Dashboard";
 import CourseSearch from "./pages/CourseSearch";
@@ -13,10 +14,27 @@ import RoundSummary from "./pages/RoundSummary";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
 import Toaster from "./components/Toaster";
+import { useEffect } from "react";
+import client from "./api/client";
 
 // ProtectedRoute is a small auth boundary around pages that require a signed-in user.
 // Keeping it here makes the route table easy to scan and avoids repeating Clerk checks per page.
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    const interceptor = client.interceptors.request.use(async (config) => {
+      const token = await getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    });
+    return () => {
+      client.interceptors.request.eject(interceptor);
+    };
+  }, [getToken]);
+
   return (
     <>
       <SignedIn>{children}</SignedIn>

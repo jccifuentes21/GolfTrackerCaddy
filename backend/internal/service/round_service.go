@@ -39,8 +39,8 @@ func (s *RoundService) CreateRound(ctx context.Context, teeID, userID, courseNam
 		TeeID:      teeID,
 		UserID:     userID,
 		CourseName: courseName,
-		Date:      date,
-		InputMode: inputMode,
+		Date:       date,
+		InputMode:  inputMode,
 	}
 	if err := s.rounds.Create(ctx, r); err != nil {
 		return nil, fmt.Errorf("failed to create round: %w", err)
@@ -53,8 +53,8 @@ func (s *RoundService) GetRound(ctx context.Context, id string) (*model.Round, e
 	return s.rounds.GetByID(ctx, id)
 }
 
-func (s *RoundService) ListRounds(ctx context.Context) ([]model.Round, error) {
-	return s.rounds.List(ctx)
+func (s *RoundService) ListRounds(ctx context.Context, userID string) ([]model.Round, error) {
+	return s.rounds.List(ctx, userID)
 }
 
 // Analyze fetches the round and its holes then delegates to the AI service.
