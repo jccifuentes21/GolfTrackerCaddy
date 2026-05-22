@@ -6,13 +6,16 @@ package db
 
 import (
 	"context"
+	"embed"
 	"fmt"
-	"os"
-	"path/filepath"
+	"io/fs"
 	"sort"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+//go:embed migrations
+var migrationsFS embed.FS
 
 func Connect(databaseURL string) (*pgxpool.Pool, error) {
 	// A pool is preferred for web servers because many requests can need the DB at once.
@@ -25,7 +28,7 @@ func Connect(databaseURL string) (*pgxpool.Pool, error) {
 	return pool, nil
 }
 
-func RunMigrations(pool *pgxpool.Pool, migrationsDir string) error {
+func RunMigrations(pool *pgxpool.Pool) error {
 	ctx := context.Background()
 
 	// schema_migrations is a simple ledger. Each filename is recorded after it runs,
@@ -38,33 +41,37 @@ func RunMigrations(pool *pgxpool.Pool, migrationsDir string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create schema_migrations table: %w", err)
 	}
-	files, err := os.ReadDir(migrationsDir)
+
+	// Read from the embedded FS — files are baked into the binary at compile time,
+	// so this works regardless of the working directory at runtime.
+	entries, err := fs.ReadDir(migrationsFS, "migrations")
 	if err != nil {
 		return fmt.Errorf("failed to read migrations directory: %w", err)
 	}
 
 	// Migration filenames are numbered, so lexical sorting gives deterministic execution order:
 	// 001 before 002 before 003, etc.
-	sort.Slice(files, func(i, j int) bool {
-		return files[i].Name() < files[j].Name()
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].Name() < entries[j].Name()
 	})
 
-	for _, file := range files {
-		if file.IsDir() {
+	for _, entry := range entries {
+		if entry.IsDir() {
 			continue
 		}
 
 		// Parameter placeholders like $1 keep values separate from SQL text.
 		// That is the core SQL injection defense when user input is involved.
 		var exists bool
-		err := pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE filename = $1)`, file.Name()).Scan(&exists)
+		err := pool.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE filename = $1)`, entry.Name()).Scan(&exists)
 		if err != nil {
 			return fmt.Errorf("failed to check if migration exists: %w", err)
 		}
 		if exists {
 			continue
 		}
-		content, err := os.ReadFile(filepath.Join(migrationsDir, file.Name()))
+
+		content, err := fs.ReadFile(migrationsFS, "migrations/"+entry.Name())
 		if err != nil {
 			return fmt.Errorf("failed to read migration file: %w", err)
 		}
@@ -74,7 +81,7 @@ func RunMigrations(pool *pgxpool.Pool, migrationsDir string) error {
 		}
 
 		// Record only after the SQL succeeds. If a migration fails, the next startup can retry it.
-		_, err = pool.Exec(ctx, `INSERT INTO schema_migrations (filename) VALUES ($1)`, file.Name())
+		_, err = pool.Exec(ctx, `INSERT INTO schema_migrations (filename) VALUES ($1)`, entry.Name())
 		if err != nil {
 			return fmt.Errorf("failed to record migration: %w", err)
 		}

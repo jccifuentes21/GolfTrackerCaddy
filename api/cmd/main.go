@@ -43,7 +43,7 @@ func main() {
 	defer pool.Close()
 
 	// Migrations run before the HTTP server starts so request handlers never see a half-ready schema.
-	if err = db.RunMigrations(pool, "migrations"); err != nil {
+	if err = db.RunMigrations(pool); err != nil {
 		log.Fatalf("Could not run migrations: %v", err)
 	}
 	log.Println("Database connected and migrations complete")
