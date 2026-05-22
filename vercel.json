@@ -1,0 +1,13 @@
+{
+  "experimentalServices": {
+    "web": {
+      "entrypoint": "frontend",
+      "routePrefix": "/"
+    },
+    "api": {
+      "entrypoint": "backend/cmd/main.go",
+      "routePrefix": "/api",
+      "framework": "go"
+    }
+  }
+}

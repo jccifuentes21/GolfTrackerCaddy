@@ -20,7 +20,7 @@ func main() {
 	// Loading environment variables at startup keeps config outside the binary.
 	// In interviews, this is the "12-factor app" idea: deploy the same code with different config.
 	if err := godotenv.Load("../.env"); err != nil {
-		log.Fatalf("Could not load .env file: %v", err)
+		log.Println("No .env file found, using environment variables")
 	}
 
 	databaseURL := os.Getenv("DATABASE_URL")
@@ -69,22 +69,22 @@ func main() {
 
 	// Go 1.22+ ServeMux supports method-aware route patterns like "GET /courses/search".
 	// This avoids a third-party router while the API surface is still small.
-	mux.HandleFunc("GET /courses/search", courseHandler.Search)
-	mux.HandleFunc("GET /courses/{id}", courseHandler.GetCourse)
-	mux.HandleFunc("POST /courses", courseHandler.Save)
-	mux.HandleFunc("GET /courses/{id}/tees", courseHandler.ListTees)
-	mux.HandleFunc("GET /tees/{id}", courseHandler.GetTee)
-	mux.HandleFunc("GET /tees/{id}/holes", courseHandler.ListTeeHoles)
+	mux.HandleFunc("GET /api/courses/search", courseHandler.Search)
+	mux.HandleFunc("GET /api/courses/{id}", courseHandler.GetCourse)
+	mux.HandleFunc("POST /api/courses", courseHandler.Save)
+	mux.HandleFunc("GET /api/courses/{id}/tees", courseHandler.ListTees)
+	mux.HandleFunc("GET /api/tees/{id}", courseHandler.GetTee)
+	mux.HandleFunc("GET /api/tees/{id}/holes", courseHandler.ListTeeHoles)
 
-	mux.HandleFunc("POST /rounds", roundHandler.Create)
-	mux.HandleFunc("GET /rounds", roundHandler.List)
-	mux.HandleFunc("GET /rounds/{id}", roundHandler.Get)
+	mux.HandleFunc("POST /api/rounds", roundHandler.Create)
+	mux.HandleFunc("GET /api/rounds", roundHandler.List)
+	mux.HandleFunc("GET /api/rounds/{id}", roundHandler.Get)
 
-	mux.HandleFunc("POST /rounds/{round_id}/holes", holeHandler.Create)
-	mux.HandleFunc("GET /rounds/{round_id}/holes", holeHandler.List)
+	mux.HandleFunc("POST /api/rounds/{round_id}/holes", holeHandler.Create)
+	mux.HandleFunc("GET /api/rounds/{round_id}/holes", holeHandler.List)
 
 	// Manual trigger for post-round AI analysis. The service gathers holes and course context first.
-	mux.HandleFunc("POST /rounds/{id}/analyze", roundHandler.Analyze)
+	mux.HandleFunc("POST /api/rounds/{id}/analyze", roundHandler.Analyze)
 
 	port := os.Getenv("PORT")
 	if port == "" {
