@@ -73,11 +73,6 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("unmatched request: %s %s", r.Method, r.URL.Path)
-		http.NotFound(w, r)
-	})
-
 	// Go 1.22+ ServeMux supports method-aware route patterns like "GET /courses/search".
 	// This avoids a third-party router while the API surface is still small.
 	mux.HandleFunc("GET /courses/search", courseHandler.Search)
@@ -96,6 +91,20 @@ func main() {
 
 	// Manual trigger for post-round AI analysis. The service gathers holes and course context first.
 	mux.HandleFunc("POST /rounds/{id}/analyze", roundHandler.Analyze)
+
+	// Unauthenticated so Vercel Cron can hit it without a Clerk token. Pinging the
+	// pool (not just the process) means the daily cron also counts as Supabase
+	// traffic, keeping the free-tier project from pausing due to inactivity.
+	rootMux := http.NewServeMux()
+	rootMux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
+		if err := pool.Ping(r.Context()); err != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			w.Write([]byte("db unreachable"))
+			return
+		}
+		w.Write([]byte("ok"))
+	})
+	rootMux.Handle("/", authMiddleware.Wrap(mux))
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -122,7 +131,7 @@ func main() {
 
 	log.Printf("Starting server on port %s (CORS allowed: %v)", port, allowedOrigins)
 
-	handler := corsHandler.Handler(authMiddleware.Wrap(mux))
+	handler := corsHandler.Handler(rootMux)
 
 	if err := http.ListenAndServe(":"+port, handler); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

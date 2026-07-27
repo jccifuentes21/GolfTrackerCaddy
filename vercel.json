@@ -9,5 +9,11 @@
       "routePrefix": "/api",
       "framework": "go"
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/health",
+      "schedule": "0 12 * * *"
+    }
+  ]
 }
